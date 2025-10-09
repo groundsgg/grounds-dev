@@ -1,0 +1,93 @@
+# yamllint configuration for Grounds Development Infrastructure
+# Ensures consistent YAML formatting across the repository
+
+extends: default
+
+rules:
+  # Line length
+  line-length:
+    max: 120
+    level: warning
+    
+  # Indentation
+  indentation:
+    spaces: 2
+    indent-sequences: true
+    check-multi-line-strings: false
+    
+  # Comments
+  comments:
+    min-spaces-from-content: 1
+    
+  # Truthy values
+  truthy:
+    allowed-values: ['true', 'false', 'on', 'off', 'yes', 'no']
+    check-keys: false
+    
+  # Empty lines
+  empty-lines:
+    max: 2
+    max-start: 0
+    max-end: 1
+    
+  # Trailing spaces
+  trailing-spaces:
+    level: error
+    
+  # Octal values
+  octal-values:
+    forbid-implicit-octal: true
+    
+  # Quoted strings
+  quoted-strings:
+    quote-type: single
+    check-keys: false
+    
+  # Brackets
+  brackets:
+    min-spaces-inside: 0
+    max-spaces-inside: 1
+    
+  # Braces
+  braces:
+    min-spaces-inside: 0
+    max-spaces-inside: 1
+    
+  # Commas
+  commas:
+    max-spaces-before: 0
+    min-spaces-after: 1
+    
+  # Colons
+  colons:
+    max-spaces-before: 0
+    max-spaces-after: 1
+    
+  # Hyphens
+  hyphens:
+    max-spaces-after: 1
+    
+  # Comments indentation
+  comments-indentation:
+    level: warning
+    
+  # Empty values
+  empty-values:
+    forbid-in-block-mappings: true
+    forbid-in-flow-mappings: true
+    
+  # Key duplicates
+  key-duplicates:
+    level: error
+    
+  # Key ordering
+  key-ordering:
+    level: warning
+    
+  # Missing document start
+  document-start:
+    present: false
+    
+  # Missing document end
+  document-end:
+    present: false

@@ -1,0 +1,77 @@
+# Agones configuration for local development
+# Minimal setup for game server hosting platform
+
+# Core Agones configuration
+agones:
+  # Feature gates - keep minimal for local development
+  featureGates: ""
+  
+  # Disable ping service (not needed for local development)
+  ping:
+    install: false
+  
+  # Controller configuration
+  controller:
+    # Resource limits for local development
+    resources:
+      requests:
+        cpu: "100m"      # 0.1 CPU cores
+        memory: "256Mi"  # 256 MB RAM
+      limits:
+        cpu: "500m"      # 0.5 CPU cores
+        memory: "512Mi"  # 512 MB RAM
+    
+    # Health checks
+    livenessProbe:
+      enabled: true
+      initialDelaySeconds: 30
+      periodSeconds: 10
+      timeoutSeconds: 5
+      failureThreshold: 3
+      successThreshold: 1
+    
+    readinessProbe:
+      enabled: true
+      initialDelaySeconds: 5
+      periodSeconds: 10
+      timeoutSeconds: 5
+      failureThreshold: 3
+      successThreshold: 1
+
+# Disable metrics and monitoring for local development
+metrics:
+  serviceMonitor:
+    enabled: false
+  # Disable Prometheus metrics
+  enabled: false
+
+# Disable allocation service for local development
+allocation:
+  enabled: false
+
+# Disable autoscaler for local development
+autoscaler:
+  enabled: false
+
+# Disable fleet allocation for local development
+fleetAllocation:
+  enabled: false
+
+# Disable webhook for local development
+webhook:
+  enabled: false
+
+# Disable allocation service for local development
+allocationService:
+  enabled: false
+
+# Network policy (disabled for local development)
+networkPolicy:
+  enabled: false
+
+# Service configuration
+service:
+  type: ClusterIP
+  ports:
+    http: 80
+    https: 443

@@ -1,0 +1,75 @@
+# Pre-commit configuration for Grounds Development Infrastructure
+# Run local linting before commits
+
+repos:
+  - repo: local
+    hooks:
+      - id: shellcheck
+        name: ShellCheck
+        entry: shellcheck
+        language: system
+        files: \.sh$
+        args: ['--severity=style']
+        
+      - id: yamllint
+        name: YAML Lint
+        entry: yamllint
+        language: system
+        files: \.(yaml|yml)$
+        args: ['--config-file=.yamllint']
+        
+      - id: check-yaml
+        name: Check YAML
+        entry: yamllint
+        language: system
+        files: \.(yaml|yml)$
+        args: ['--format=parsable']
+        
+      - id: check-script-permissions
+        name: Check Script Permissions
+        entry: bash
+        language: system
+        files: \.sh$
+        args: ['-c', 'test -x "$1" || (echo "Script $1 is not executable" && exit 1)']
+        
+      - id: check-makefile
+        name: Check Makefile
+        entry: make
+        language: system
+        files: ^Makefile$
+        args: ['help']
+        
+      - id: check-k3d-config
+        name: Check k3d Configuration
+        entry: bash
+        language: system
+        files: ^cluster/k3d\.yaml$
+        args: ['-c', 'k3d cluster create test --config cluster/k3d.yaml --dry-run || exit 1']
+        
+      - id: check-helm-charts
+        name: Check Helm Charts
+        entry: helmfile
+        language: system
+        files: ^helmfile\.yaml$
+        args: ['lint']
+        
+      - id: check-kubernetes-manifests
+        name: Check Kubernetes Manifests
+        entry: kubectl
+        language: system
+        files: ^manifests/.*\.yaml$
+        args: ['apply', '--dry-run=client', '--validate=true']
+        
+      - id: check-documentation
+        name: Check Documentation
+        entry: bash
+        language: system
+        files: ^README\.md$
+        args: ['-c', 'test -f README.md || (echo "README.md not found" && exit 1)']
+        
+      - id: check-security
+        name: Security Scan
+        entry: bash
+        language: system
+        files: \.(sh|yaml|yml)$
+        args: ['-c', 'grep -r -i "password\|secret\|key" . --exclude-dir=.git --exclude="*.md" | grep -v "app/app" | grep -v "localhost" && (echo "Potential hardcoded secrets found" && exit 1) || true']

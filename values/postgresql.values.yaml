@@ -1,0 +1,71 @@
+# PostgreSQL configuration for local development
+# Minimal setup with persistent storage and resource limits
+
+# Global PostgreSQL configuration
+global:
+  postgresql:
+    auth:
+      # Default credentials for local development
+      username: app
+      password: app
+      database: app
+    # Enable metrics collection (disabled for local simplicity)
+    metrics:
+      enabled: false
+
+# Primary PostgreSQL instance configuration
+primary:
+  # Enable persistent storage for data persistence
+  persistence:
+    enabled: true
+    size: 5Gi
+    # Use local storage class (k3d default)
+    storageClass: "local-path"
+  
+  # Resource limits for local development
+  resources:
+    requests:
+      cpu: "100m"      # 0.1 CPU cores
+      memory: "256Mi"  # 256 MB RAM
+    limits:
+      cpu: "500m"      # 0.5 CPU cores
+      memory: "512Mi"  # 512 MB RAM
+  
+  # Health checks
+  livenessProbe:
+    enabled: true
+    initialDelaySeconds: 30
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 6
+    successThreshold: 1
+  
+  readinessProbe:
+    enabled: true
+    initialDelaySeconds: 5
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 6
+    successThreshold: 1
+
+# Disable read replicas for local development
+readReplicas:
+  replicaCount: 0
+
+# Disable metrics and monitoring for local development
+metrics:
+  enabled: false
+
+# Disable backup for local development
+backup:
+  enabled: false
+
+# Network policy (disabled for local development)
+networkPolicy:
+  enabled: false
+
+# Service configuration
+service:
+  type: ClusterIP
+  ports:
+    postgresql: 5432

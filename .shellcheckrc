@@ -1,0 +1,38 @@
+# ShellCheck configuration for Grounds Development Infrastructure
+# Ensures consistent shell script quality and security
+
+# Disable specific warnings that are acceptable for this project
+disable=SC1091,SC2034,SC2155,SC2164
+
+# Enable additional checks
+enable=all
+
+# Set shell dialect
+shell=bash
+
+# Set severity level
+severity=style
+
+# Exclude specific directories
+exclude-dir=.git,node_modules,venv,env
+
+# Set source path
+source-path=.
+
+# Enable external source checks
+external-sources=true
+
+# Set format
+format=tty
+
+# Enable color output
+color=always
+
+# Set output format
+output-format=tty
+
+# Enable shellcheck directives
+directive=all
+
+# Set minimum severity
+min-severity=info

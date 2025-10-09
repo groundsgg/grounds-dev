@@ -1,0 +1,102 @@
+# Grounds Development Infrastructure (grounds-dev) .gitignore
+# Ignores temporary files, build artifacts, and sensitive data
+
+# Kubernetes and Helm artifacts
+*.kubeconfig
+*.kubeconfig.backup
+kubeconfig
+.helm/
+.helmfile/
+
+# Temporary files
+*.tmp
+*.temp
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+helmfile.log
+
+# Backup files
+*.bak
+*.backup
+*~
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Docker
+.dockerignore
+
+# Secrets and sensitive data
+secrets/
+*.secret
+*.key
+*.pem
+*.crt
+*.p12
+
+# Local development
+.local/
+local/
+dev-local/
+
+# Build artifacts
+build/
+dist/
+target/
+
+# Node modules (if any)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Python (if any)
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Go (if any)
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+go.work
+
+# Terraform (if any)
+*.tfstate
+*.tfstate.*
+.terraform/
+.terraform.lock.hcl
+
+# Ansible (if any)
+*.retry
+
+# GitHub Actions
+.github/workflows/*.yml.bak
+.github/workflows/*.yaml.bak
