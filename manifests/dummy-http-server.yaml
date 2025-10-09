@@ -22,42 +22,42 @@ spec:
         component: demo
     spec:
       containers:
-      - name: nginx
-        image: nginx:1.25-alpine
-        ports:
-        - containerPort: 80
-          name: http
-        resources:
-          requests:
-            cpu: "50m"
-            memory: "64Mi"
-          limits:
-            cpu: "100m"
-            memory: "128Mi"
-        livenessProbe:
-          httpGet:
-            path: /
-            port: 80
-          initialDelaySeconds: 10
-          periodSeconds: 10
-          timeoutSeconds: 5
-          failureThreshold: 3
-        readinessProbe:
-          httpGet:
-            path: /
-            port: 80
-          initialDelaySeconds: 5
-          periodSeconds: 5
-          timeoutSeconds: 3
-          failureThreshold: 3
-        # Custom nginx configuration for demo
-        volumeMounts:
-        - name: nginx-config
-          mountPath: /etc/nginx/conf.d
+        - name: nginx
+          image: nginx:1.25-alpine
+          ports:
+            - containerPort: 80
+              name: http
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 100m
+              memory: 128Mi
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 3
+          # Custom nginx configuration for demo
+          volumeMounts:
+            - name: nginx-config
+              mountPath: /etc/nginx/conf.d
       volumes:
-      - name: nginx-config
-        configMap:
-          name: dummy-http-server-config
+        - name: nginx-config
+          configMap:
+            name: dummy-http-server-config
 
 ---
 # ConfigMap for nginx configuration
@@ -73,17 +73,17 @@ data:
     server {
         listen 80;
         server_name _;
-        
+
         location / {
             return 200 'Hello from dev-infra! 🚀\n\nThis is a dummy HTTP server running in the k3d cluster.\n\nServices available:\n- PostgreSQL: databases namespace\n- Agones: games namespace\n- Open Match: games namespace\n\nCluster is working correctly! ✅\n';
             add_header Content-Type text/plain;
         }
-        
+
         location /health {
             return 200 'OK';
             add_header Content-Type text/plain;
         }
-        
+
         location /demo {
             return 200 'Demo endpoint working! 🎉\n';
             add_header Content-Type text/plain;
@@ -102,10 +102,10 @@ metadata:
 spec:
   type: ClusterIP
   ports:
-  - port: 80
-    targetPort: 80
-    protocol: TCP
-    name: http
+    - port: 80
+      targetPort: 80
+      protocol: TCP
+      name: http
   selector:
     app: dummy-http-server
 
@@ -124,13 +124,13 @@ metadata:
     traefik.ingress.kubernetes.io/router.rule: PathPrefix(`/demo`)
 spec:
   rules:
-  - host: localhost
-    http:
-      paths:
-      - path: /demo
-        pathType: Prefix
-        backend:
-          service:
-            name: dummy-http-server
-            port:
-              number: 80
+    - host: localhost
+      http:
+        paths:
+          - path: /demo
+            pathType: Prefix
+            backend:
+              service:
+                name: dummy-http-server
+                port:
+                  number: 80

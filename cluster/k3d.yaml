@@ -25,7 +25,7 @@ ports:
 registries:
   create:
     name: dev-registry
-    host: "0.0.0.0"
+    host: 0.0.0.0
     hostPort: "5001"
 
 # k3d and k3s options

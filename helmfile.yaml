@@ -15,7 +15,7 @@ releases:
   - name: postgresql
     namespace: databases
     chart: bitnami/postgresql
-    version: "~18"  # Use PostgreSQL 18.x (latest stable)
+    version: ~18  # Use PostgreSQL 18.x (latest stable)
     values:
       - values/postgresql.values.yaml
     # Wait for PostgreSQL to be ready before proceeding

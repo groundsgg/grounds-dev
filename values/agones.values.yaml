@@ -5,22 +5,22 @@
 agones:
   # Feature gates - keep minimal for local development
   featureGates: ""
-  
+
   # Disable ping service (not needed for local development)
   ping:
     install: false
-  
+
   # Controller configuration
   controller:
     # Resource limits for local development
     resources:
       requests:
-        cpu: "100m"      # 0.1 CPU cores
-        memory: "256Mi"  # 256 MB RAM
+        cpu: 100m      # 0.1 CPU cores
+        memory: 256Mi  # 256 MB RAM
       limits:
-        cpu: "500m"      # 0.5 CPU cores
-        memory: "512Mi"  # 512 MB RAM
-    
+        cpu: 500m      # 0.5 CPU cores
+        memory: 512Mi  # 512 MB RAM
+
     # Health checks
     livenessProbe:
       enabled: true
@@ -29,7 +29,7 @@ agones:
       timeoutSeconds: 5
       failureThreshold: 3
       successThreshold: 1
-    
+
     readinessProbe:
       enabled: true
       initialDelaySeconds: 5

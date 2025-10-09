@@ -20,17 +20,17 @@ primary:
     enabled: true
     size: 5Gi
     # Use local storage class (k3d default)
-    storageClass: "local-path"
-  
+    storageClass: local-path
+
   # Resource limits for local development
   resources:
     requests:
-      cpu: "100m"      # 0.1 CPU cores
-      memory: "256Mi"  # 256 MB RAM
+      cpu: 100m      # 0.1 CPU cores
+      memory: 256Mi  # 256 MB RAM
     limits:
-      cpu: "500m"      # 0.5 CPU cores
-      memory: "512Mi"  # 512 MB RAM
-  
+      cpu: 500m      # 0.5 CPU cores
+      memory: 512Mi  # 512 MB RAM
+
   # Health checks
   livenessProbe:
     enabled: true
@@ -39,7 +39,7 @@ primary:
     timeoutSeconds: 5
     failureThreshold: 6
     successThreshold: 1
-  
+
   readinessProbe:
     enabled: true
     initialDelaySeconds: 5

@@ -1,75 +1,76 @@
 # Pre-commit configuration for Grounds Development Infrastructure
 # Run local linting before commits
+# yamllint disable rule:quoted-strings
 
 repos:
   - repo: local
     hooks:
       - id: shellcheck
-        name: ShellCheck
+        args: [--severity=style]
         entry: shellcheck
-        language: system
         files: \.sh$
-        args: ['--severity=style']
-        
+        language: system
+        name: ShellCheck
+
       - id: yamllint
+        args: [--config-file=.yamllint]
+        entry: yamllint
+        files: \.(yaml|yml)$
+        language: system
         name: YAML Lint
-        entry: yamllint
-        language: system
-        files: \.(yaml|yml)$
-        args: ['--config-file=.yamllint']
-        
+
       - id: check-yaml
-        name: Check YAML
+        args: [--format=parsable]
         entry: yamllint
-        language: system
         files: \.(yaml|yml)$
-        args: ['--format=parsable']
-        
+        language: system
+        name: Check YAML
+
       - id: check-script-permissions
-        name: Check Script Permissions
+        args: [-c, 'test -x "$1" || (echo "Script $1 is not executable" && exit 1)']
         entry: bash
-        language: system
         files: \.sh$
-        args: ['-c', 'test -x "$1" || (echo "Script $1 is not executable" && exit 1)']
-        
+        language: system
+        name: Check Script Permissions
+
       - id: check-makefile
-        name: Check Makefile
+        args: [help]
         entry: make
-        language: system
         files: ^Makefile$
-        args: ['help']
-        
+        language: system
+        name: Check Makefile
+
       - id: check-k3d-config
-        name: Check k3d Configuration
+        args: [-c, 'k3d cluster create test --config cluster/k3d.yaml --dry-run || exit 1']
         entry: bash
-        language: system
         files: ^cluster/k3d\.yaml$
-        args: ['-c', 'k3d cluster create test --config cluster/k3d.yaml --dry-run || exit 1']
-        
+        language: system
+        name: Check k3d Configuration
+
       - id: check-helm-charts
-        name: Check Helm Charts
+        args: [lint]
         entry: helmfile
-        language: system
         files: ^helmfile\.yaml$
-        args: ['lint']
-        
+        language: system
+        name: Check Helm Charts
+
       - id: check-kubernetes-manifests
-        name: Check Kubernetes Manifests
+        args: [apply, --dry-run=client, --validate=true]
         entry: kubectl
-        language: system
         files: ^manifests/.*\.yaml$
-        args: ['apply', '--dry-run=client', '--validate=true']
-        
+        language: system
+        name: Check Kubernetes Manifests
+
       - id: check-documentation
-        name: Check Documentation
+        args: [-c, 'test -f README.md || (echo "README.md not found" && exit 1)']
         entry: bash
-        language: system
         files: ^README\.md$
-        args: ['-c', 'test -f README.md || (echo "README.md not found" && exit 1)']
-        
-      - id: check-security
-        name: Security Scan
-        entry: bash
         language: system
+        name: Check Documentation
+
+      - id: check-security
+        args: [-c, 'grep -r -i "password\|secret\|key" . --exclude-dir=.git --exclude="*.md" | grep -v "app/app" | grep -v "localhost" && (echo "Potential hardcoded secrets found" && exit 1) || true']
+        entry: bash
         files: \.(sh|yaml|yml)$
-        args: ['-c', 'grep -r -i "password\|secret\|key" . --exclude-dir=.git --exclude="*.md" | grep -v "app/app" | grep -v "localhost" && (echo "Potential hardcoded secrets found" && exit 1) || true']
+        language: system
+        name: Security Scan
