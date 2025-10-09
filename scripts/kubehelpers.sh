@@ -73,13 +73,13 @@ wait_for_pods() {
     local selector="$2"
     local timeout="${3:-300}"
     
-    log_info "Waiting for pods in namespace '$namespace' with selector '$selector'"
+    log_info "Waiting for pods in namespace '${namespace}' with selector '${selector}'"
     
-    if kubectl wait --for=condition=ready pod -l "$selector" -n "$namespace" --timeout="${timeout}s" >/dev/null 2>&1; then
-        log_success "Pods are ready in namespace '$namespace'"
+    if kubectl wait --for=condition=ready pod -l "${selector}" -n "${namespace}" --timeout="${timeout}s" >/dev/null 2>&1; then
+        log_success "Pods are ready in namespace '${namespace}'"
         return 0
     else
-        log_warning "Timeout waiting for pods in namespace '$namespace'"
+        log_warning "Timeout waiting for pods in namespace '${namespace}'"
         return 1
     fi
 }
@@ -88,11 +88,11 @@ wait_for_pods() {
 check_namespace() {
     local namespace="$1"
     
-    if kubectl get namespace "$namespace" >/dev/null 2>&1; then
-        log_success "Namespace '$namespace' exists"
+    if kubectl get namespace "${namespace}" >/dev/null 2>&1; then
+        log_success "Namespace '${namespace}' exists"
         return 0
     else
-        log_warning "Namespace '$namespace' does not exist"
+        log_warning "Namespace '${namespace}' does not exist"
         return 1
     fi
 }
@@ -103,8 +103,8 @@ get_pod_logs() {
     local pod="$2"
     local lines="${3:-50}"
     
-    log_info "Getting logs for pod '$pod' in namespace '$namespace'"
-    kubectl logs -n "$namespace" "$pod" --tail="$lines"
+    log_info "Getting logs for pod '${pod}' in namespace '${namespace}'"
+    kubectl logs -n "${namespace}" "${pod}" --tail="${lines}"
 }
 
 # Port forward helper
@@ -114,8 +114,8 @@ port_forward() {
     local local_port="$3"
     local service_port="$4"
     
-    log_info "Port forwarding $service:$service_port to localhost:$local_port"
-    kubectl port-forward -n "$namespace" "service/$service" "$local_port:$service_port"
+    log_info "Port forwarding ${service}:${service_port} to localhost:${local_port}"
+    kubectl port-forward -n "${namespace}" "service/${service}" "${local_port}:${service_port}"
 }
 
 # Main function for script usage
@@ -127,28 +127,28 @@ main() {
             get_cluster_status
             ;;
         "wait-pods")
-            if [ $# -lt 3 ]; then
+            if [[ $# -lt 3 ]]; then
                 log_error "Usage: $0 wait-pods <namespace> <selector> [timeout]"
                 exit 1
             fi
             wait_for_pods "$2" "$3" "${4:-300}"
             ;;
         "check-ns")
-            if [ $# -lt 2 ]; then
+            if [[ $# -lt 2 ]]; then
                 log_error "Usage: $0 check-ns <namespace>"
                 exit 1
             fi
             check_namespace "$2"
             ;;
         "logs")
-            if [ $# -lt 3 ]; then
+            if [[ $# -lt 3 ]]; then
                 log_error "Usage: $0 logs <namespace> <pod> [lines]"
                 exit 1
             fi
             get_pod_logs "$2" "$3" "${4:-50}"
             ;;
         "port-forward")
-            if [ $# -lt 5 ]; then
+            if [[ $# -lt 5 ]]; then
                 log_error "Usage: $0 port-forward <namespace> <service> <local-port> <service-port>"
                 exit 1
             fi

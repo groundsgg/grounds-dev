@@ -49,7 +49,7 @@ log_success "All prerequisites found"
 
 # Create k3d cluster
 log_step "Creating k3d cluster 'dev'..."
-k3d cluster create --config "$here/k3d.yaml"
+k3d cluster create --config "${here}/k3d.yaml"
 log_success "Cluster 'dev' created successfully"
 
 # Set kubectl context
@@ -60,8 +60,8 @@ log_success "kubectl context set to k3d-dev"
 # Create namespaces
 log_info "Creating namespaces..."
 for ns in infra databases games; do
-    log_info "Creating namespace: $ns"
-    kubectl create namespace "$ns" --dry-run=client -o yaml | kubectl apply -f -
+    log_info "Creating namespace: ${ns}"
+    kubectl create namespace "${ns}" --dry-run=client -o yaml | kubectl apply -f -
 done
 log_success "Namespaces created: infra, databases, games"
 

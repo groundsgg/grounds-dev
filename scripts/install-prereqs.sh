@@ -42,19 +42,27 @@ command_exists() {
 
 # Detect OS
 detect_os() {
-    if [[ "$OSTYPE" == "linux-gnu"* ]]; then
-        if command_exists apt-get; then
+    if [[ "${OSTYPE}" == "linux-gnu"* ]]; then
+        local has_apt has_yum has_pacman
+        command_exists apt-get
+        has_apt=$?
+        command_exists yum
+        has_yum=$?
+        command_exists pacman
+        has_pacman=$?
+        
+        if [[ "${has_apt}" -eq 0 ]]; then
             echo "ubuntu"
-        elif command_exists yum; then
+        elif [[ "${has_yum}" -eq 0 ]]; then
             echo "rhel"
-        elif command_exists pacman; then
+        elif [[ "${has_pacman}" -eq 0 ]]; then
             echo "arch"
         else
             echo "linux"
         fi
-    elif [[ "$OSTYPE" == "darwin"* ]]; then
+    elif [[ "${OSTYPE}" == "darwin"* ]]; then
         echo "macos"
-    elif [[ "$OSTYPE" == "msys" ]] || [[ "$OSTYPE" == "cygwin" ]]; then
+    elif [[ "${OSTYPE}" == "msys" ]] || [[ "${OSTYPE}" == "cygwin" ]]; then
         echo "windows"
     else
         echo "unknown"
@@ -66,18 +74,24 @@ install_docker() {
     local os="$1"
     log_info "Installing Docker..."
     
-    case "$os" in
+    case "${os}" in
         "ubuntu")
-            if ! command_exists docker; then
+            local docker_exists
+            command_exists docker
+            docker_exists=$?
+            if [[ "${docker_exists}" -ne 0 ]]; then
                 curl -fsSL https://get.docker.com | sh
-                sudo usermod -aG docker $USER
+                sudo usermod -aG docker "${USER}"
                 log_success "Docker installed. Please log out and back in for group changes to take effect."
             else
                 log_success "Docker already installed"
             fi
             ;;
         "macos")
-            if ! command_exists docker; then
+            local docker_exists
+            command_exists docker
+            docker_exists=$?
+            if [[ "${docker_exists}" -ne 0 ]]; then
                 log_warning "Please install Docker Desktop for macOS from https://www.docker.com/products/docker-desktop"
                 log_info "Or install via Homebrew: brew install --cask docker"
             else
@@ -92,7 +106,10 @@ install_docker() {
 
 # Install k3d
 install_k3d() {
-    if ! command_exists k3d; then
+    local k3d_exists
+    command_exists k3d
+    k3d_exists=$?
+    if [[ "${k3d_exists}" -ne 0 ]]; then
         log_info "Installing k3d..."
         curl -s https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh | bash
         log_success "k3d installed"
@@ -103,7 +120,10 @@ install_k3d() {
 
 # Install kubectl
 install_kubectl() {
-    if ! command_exists kubectl; then
+    local kubectl_exists
+    command_exists kubectl
+    kubectl_exists=$?
+    if [[ "${kubectl_exists}" -ne 0 ]]; then
         log_info "Installing kubectl..."
         local kubectl_version=$(curl -L -s https://dl.k8s.io/release/stable.txt)
         curl -LO "https://dl.k8s.io/release/${kubectl_version}/bin/linux/amd64/kubectl"
@@ -117,7 +137,10 @@ install_kubectl() {
 
 # Install Helm
 install_helm() {
-    if ! command_exists helm; then
+    local helm_exists
+    command_exists helm
+    helm_exists=$?
+    if [[ "${helm_exists}" -ne 0 ]]; then
         log_info "Installing Helm..."
         curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
         log_success "Helm installed"
@@ -128,7 +151,10 @@ install_helm() {
 
 # Install Helmfile
 install_helmfile() {
-    if ! command_exists helmfile; then
+    local helmfile_exists
+    command_exists helmfile
+    helmfile_exists=$?
+    if [[ "${helmfile_exists}" -ne 0 ]]; then
         log_info "Installing Helmfile..."
         local helmfile_version="v0.156.0"
         curl -L "https://github.com/helmfile/helmfile/releases/download/${helmfile_version}/helmfile_${helmfile_version#v}_linux_amd64.tar.gz" | tar xz
@@ -154,28 +180,40 @@ check_docker_daemon() {
 check_prereqs() {
     log_info "Checking prerequisites..."
     local missing=()
+    local docker_exists k3d_exists kubectl_exists helm_exists helmfile_exists
     
-    if ! command_exists docker; then
+    command_exists docker
+    docker_exists=$?
+    command_exists k3d
+    k3d_exists=$?
+    command_exists kubectl
+    kubectl_exists=$?
+    command_exists helm
+    helm_exists=$?
+    command_exists helmfile
+    helmfile_exists=$?
+    
+    if [[ "${docker_exists}" -ne 0 ]]; then
         missing+=("docker")
     fi
     
-    if ! command_exists k3d; then
+    if [[ "${k3d_exists}" -ne 0 ]]; then
         missing+=("k3d")
     fi
     
-    if ! command_exists kubectl; then
+    if [[ "${kubectl_exists}" -ne 0 ]]; then
         missing+=("kubectl")
     fi
     
-    if ! command_exists helm; then
+    if [[ "${helm_exists}" -ne 0 ]]; then
         missing+=("helm")
     fi
     
-    if ! command_exists helmfile; then
+    if [[ "${helmfile_exists}" -ne 0 ]]; then
         missing+=("helmfile")
     fi
     
-    if [ ${#missing[@]} -eq 0 ]; then
+    if [[ ${#missing[@]} -eq 0 ]]; then
         log_success "All prerequisites found"
         return 0
     else
@@ -195,17 +233,20 @@ main() {
     log_step "Checking and installing prerequisites for Grounds Development Infrastructure..."
     
     local os=$(detect_os)
-    log_info "Detected OS: $os"
+    log_info "Detected OS: ${os}"
     
     # Install prerequisites
-    install_docker "$os"
+    install_docker "${os}"
     install_k3d
     install_kubectl
     install_helm
     install_helmfile
     
     # Check Docker daemon
-    if ! check_docker_daemon; then
+    local daemon_running
+    check_docker_daemon
+    daemon_running=$?
+    if [[ "${daemon_running}" -ne 0 ]]; then
         log_error "Docker daemon is not running. Please start Docker and run 'make up' again."
         exit 1
     fi
