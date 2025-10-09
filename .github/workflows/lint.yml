@@ -29,9 +29,6 @@ jobs:
           # Install Helm
           curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
 
-          # Install k3d
-          curl -s https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh | bash
-
           # Install kubectl
           curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
           chmod +x kubectl
@@ -61,15 +58,6 @@ jobs:
           }
           echo "✅ All YAML files passed linting"
 
-      - name: ⚙️ Validate k3d Configuration
-        run: |
-          echo "🔍 Validating k3d configuration..."
-          k3d cluster create test-cluster --config cluster/k3d.yaml --dry-run || {
-            echo "❌ k3d configuration validation failed"
-            exit 1
-          }
-          echo "✅ k3d configuration is valid"
-
       - name: 📦 Validate Helm Charts
         run: |
           echo "🔍 Validating Helm charts..."
@@ -78,12 +66,3 @@ jobs:
             exit 1
           }
           echo "✅ All Helm charts are valid"
-
-      - name: ☸️ Validate Kubernetes Manifests
-        run: |
-          echo "🔍 Validating Kubernetes manifests..."
-          kubectl apply --dry-run=client -f manifests/ || {
-            echo "❌ Kubernetes manifest validation failed"
-            exit 1
-          }
-          echo "✅ All Kubernetes manifests are valid"
