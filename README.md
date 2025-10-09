@@ -1,6 +1,6 @@
 # Grounds Development Infrastructure (grounds-dev) 🚀
 
-A local development infrastructure that provisions a k3d Kubernetes cluster with PostgreSQL, Agones (game server hosting), and Open Match (matchmaking).
+A local development infrastructure that provisions a k3d Kubernetes cluster with PostgreSQL and Agones (game server hosting).
 
 ## 🎯 Quick Start
 
@@ -15,7 +15,6 @@ The `make up` command will automatically install missing prerequisites and deplo
 - **k3d Kubernetes cluster** (1 server + 2 agents)
 - **PostgreSQL database** in `databases` namespace
 - **Agones** for game server hosting in `games` namespace
-- **Open Match** for matchmaking in `games` namespace
 - **Dummy HTTP server** for testing in `infra` namespace
 
 ## 🛠️ Essential Commands
@@ -63,14 +62,6 @@ kubectl get fleets -n games
 kubectl get gameservers -n games
 ```
 
-### Open Match Matchmaking
-- **Namespace**: `games`
-- **Services**: `open-match-frontend`, `open-match-backend`
-
-```bash
-# Check Open Match status
-kubectl get pods -n games -l app.kubernetes.io/name=open-match
-```
 
 ### Dummy HTTP Server (Testing)
 - **URL**: http://localhost/demo
