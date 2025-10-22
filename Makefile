@@ -109,3 +109,10 @@ test: ## Test the deployment
 check-prereqs: ## Check prerequisites
 	@echo -e "$(BLUE)ℹ️  Checking prerequisites...$(NC)"
 	@./scripts/install-prereqs.sh --check-only || true
+
+.PHONY: export-kubeconfig
+export-kubeconfig: ## Export k3d cluster kubeconfig to ./kubeconfig
+	@echo -e "$(BLUE)ℹ️  Exporting kubeconfig...$(NC)"
+	@k3d kubeconfig get dev > kubeconfig
+	@echo -e "$(GREEN)✅ Kubeconfig exported to ./kubeconfig$(NC)"
+	@echo -e "$(CYAN)Use it with: export KUBECONFIG=\$$(pwd)/kubeconfig$(NC)"

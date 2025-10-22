@@ -26,6 +26,7 @@ The `make up` command will automatically install missing prerequisites and deplo
 | `make status` | Show cluster and deployment status |
 | `make logs` | Show logs for all services |
 | `make test` | Test the deployment |
+| `make export-kubeconfig` | Export cluster kubeconfig to ./kubeconfig |
 | `make help` | Show all available commands |
 
 ### Development Helpers
@@ -35,6 +36,19 @@ The `make up` command will automatically install missing prerequisites and deplo
 | `make port-forward` | Port forward services to localhost |
 | `make db-connect` | Connect to PostgreSQL database |
 | `make shell` | Open shell in PostgreSQL pod |
+
+### Kubeconfig Access
+
+The cluster kubeconfig is automatically exported to `./kubeconfig` during setup.
+
+```bash
+# Use the local kubeconfig
+export KUBECONFIG=$(pwd)/kubeconfig
+kubectl get nodes
+
+# Or manually re-export
+make export-kubeconfig
+```
 
 ## 🌐 Service Access
 

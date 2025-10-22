@@ -57,6 +57,11 @@ log_info "Setting kubectl context to k3d-dev..."
 kubectl config use-context k3d-dev
 log_success "kubectl context set to k3d-dev"
 
+# Export kubeconfig to project root
+log_info "Exporting kubeconfig to ./kubeconfig..."
+k3d kubeconfig get dev > "${here}/../kubeconfig"
+log_success "Kubeconfig exported to ./kubeconfig"
+
 # Create namespaces
 log_info "Creating namespaces..."
 for ns in infra databases games; do
@@ -86,3 +91,4 @@ log_info "Next steps:"
 echo -e "  ${CYAN}•${NC} Run ${WHITE}make up${NC} to deploy the full stack"
 echo -e "  ${CYAN}•${NC} Run ${WHITE}make status${NC} to check deployment status"
 echo -e "  ${CYAN}•${NC} Access services at ${WHITE}http://localhost${NC}"
+echo -e "  ${CYAN}•${NC} Use kubeconfig: ${WHITE}export KUBECONFIG=\$(pwd)/kubeconfig${NC}"
