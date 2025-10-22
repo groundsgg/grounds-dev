@@ -165,6 +165,21 @@ install_helmfile() {
     fi
 }
 
+# Install DevSpace
+install_devspace() {
+    if ! command -v devspace >/dev/null 2>&1; then
+        log_info "Installing DevSpace..."
+        local devspace_version="v6.3.18"
+        local temp_file=$(mktemp)
+        curl -L "https://github.com/loft-sh/devspace/releases/download/${devspace_version}/devspace-linux-amd64" -o "${temp_file}"
+        chmod +x "${temp_file}"
+        sudo mv "${temp_file}" /usr/local/bin/devspace
+        log_success "DevSpace installed"
+    else
+        log_success "DevSpace already installed"
+    fi
+}
+
 # Check Docker daemon
 check_docker_daemon() {
     if ! docker info >/dev/null 2>&1; then
@@ -180,7 +195,7 @@ check_docker_daemon() {
 check_prereqs() {
     log_info "Checking prerequisites..."
     local missing=()
-    local docker_exists k3d_exists kubectl_exists helm_exists helmfile_exists
+    local docker_exists k3d_exists kubectl_exists helm_exists helmfile_exists devspace_exists
     
     command_exists docker
     docker_exists=$?
@@ -192,6 +207,8 @@ check_prereqs() {
     helm_exists=$?
     command_exists helmfile
     helmfile_exists=$?
+    command_exists devspace
+    devspace_exists=$?
     
     if [[ "${docker_exists}" -ne 0 ]]; then
         missing+=("docker")
@@ -211,6 +228,10 @@ check_prereqs() {
     
     if [[ "${helmfile_exists}" -ne 0 ]]; then
         missing+=("helmfile")
+    fi
+    
+    if [[ "${devspace_exists}" -ne 0 ]]; then
+        missing+=("devspace")
     fi
     
     if [[ ${#missing[@]} -eq 0 ]]; then
@@ -241,6 +262,7 @@ main() {
     install_kubectl
     install_helm
     install_helmfile
+    install_devspace
     
     # Check Docker daemon
     local daemon_running
