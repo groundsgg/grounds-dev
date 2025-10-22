@@ -93,6 +93,7 @@ clean: ## Clean up all resources
 	@kubectl delete -f manifests/dummy-http-server.yaml || true
 	@helmfile destroy || true
 	@k3d cluster delete dev || true
+	@rm -f kubeconfig || true
 	@echo -e "$(GREEN)✅ Cleanup completed$(NC)"
 
 .PHONY: test
