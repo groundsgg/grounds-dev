@@ -49,6 +49,7 @@ secrets/
 *.pem
 *.crt
 *.p12
+.env
 
 # Local development
 .local/

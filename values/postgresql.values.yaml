@@ -26,27 +26,35 @@ primary:
   resources:
     requests:
       cpu: 100m      # 0.1 CPU cores
-      memory: 256Mi  # 256 MB RAM
+      memory: 512Mi    # 512 MB RAM
     limits:
-      cpu: 500m      # 0.5 CPU cores
-      memory: 512Mi  # 512 MB RAM
+      cpu: 500m        # 0.5 CPU cores
+      memory: 1Gi      # 1 GB RAM
 
-  # Health checks
+  # Health checks - ultra-optimized for local development
   livenessProbe:
     enabled: true
-    initialDelaySeconds: 30
-    periodSeconds: 10
+    initialDelaySeconds: 20
+    periodSeconds: 5
     timeoutSeconds: 5
-    failureThreshold: 6
+    failureThreshold: 5
     successThreshold: 1
 
   readinessProbe:
     enabled: true
     initialDelaySeconds: 5
-    periodSeconds: 10
+    periodSeconds: 5
     timeoutSeconds: 5
-    failureThreshold: 6
+    failureThreshold: 5
     successThreshold: 1
+
+  # Startup probe for long initialization - ultra-optimized
+  startupProbe:
+    enabled: true
+    initialDelaySeconds: 5
+    periodSeconds: 5
+    timeoutSeconds: 5
+    failureThreshold: 12
 
 # Disable read replicas for local development
 readReplicas:

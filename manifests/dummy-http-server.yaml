@@ -118,10 +118,6 @@ metadata:
   namespace: infra
   labels:
     app: dummy-http-server
-  annotations:
-    # Traefik ingress annotations
-    traefik.ingress.kubernetes.io/router.entrypoints: web
-    traefik.ingress.kubernetes.io/router.rule: PathPrefix(`/demo`)
 spec:
   rules:
     - host: localhost

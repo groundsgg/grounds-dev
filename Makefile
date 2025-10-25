@@ -90,8 +90,6 @@ port-forward: ## Port forward services to localhost
 .PHONY: clean
 clean: ## Clean up all resources
 	@echo -e "$(YELLOW)⚠️  Cleaning up all resources...$(NC)"
-	@kubectl delete -f manifests/dummy-http-server.yaml || true
-	@helmfile destroy || true
 	@k3d cluster delete dev || true
 	@rm -f kubeconfig || true
 	@echo -e "$(GREEN)✅ Cleanup completed$(NC)"

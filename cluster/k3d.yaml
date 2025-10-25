@@ -27,16 +27,29 @@ registries:
     name: dev-registry
     host: 0.0.0.0
     hostPort: "5001"
+  config: |
+    mirrors:
+      "docker.io":
+        endpoint:
+          - "https://mirror.gcr.io"
+      "https://registry-1.docker.io":
+        endpoint:
+          - "https://mirror.gcr.io"
+    configs:
+      "docker.io":
+        auth:
+          username: ${DOCKER_USERNAME}
+          password: ${DOCKER_PASSWORD}
 
 # k3d and k3s options
 options:
   k3d:
     wait: true  # Wait for cluster to be ready before returning
-  k3s:
-    extraArgs:
-      # Keep ServiceLB enabled for LoadBalancer services
-      - arg: --disable=servicelb=false
-        nodeFilters: [server:0]
-      # Keep Traefik enabled for ingress controller
-      - arg: --disable=traefik=false
-        nodeFilters: [server:0]
+  # k3s:
+  #   extraArgs:
+  #     # Keep ServiceLB enabled for LoadBalancer services
+  #     - arg: --disable=servicelb=false
+  #       nodeFilters: [server:0]
+  #     # Keep Traefik enabled for ingress controller
+  #     - arg: --disable=traefik=false
+  #       nodeFilters: [server:0]

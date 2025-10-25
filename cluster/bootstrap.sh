@@ -47,10 +47,39 @@ command -v kubectl >/dev/null 2>&1 || { log_error "kubectl is required but not i
 command -v helm >/dev/null 2>&1 || { log_error "helm is required but not installed. Please install helm first."; exit 1; }
 log_success "All prerequisites found"
 
-# Create k3d cluster
-log_step "Creating k3d cluster 'dev'..."
-k3d cluster create --config "${here}/k3d.yaml"
-log_success "Cluster 'dev' created successfully"
+# Check if cluster already exists
+if k3d cluster list | grep -q "^dev "; then
+    log_warning "Cluster 'dev' already exists, checking health..."
+    
+    # Check if cluster is healthy with retry
+    max_retries=3
+    retry_count=0
+    cluster_healthy=false
+    
+    while [ $retry_count -lt $max_retries ]; do
+        if kubectl cluster-info >/dev/null 2>&1 && kubectl get nodes >/dev/null 2>&1; then
+            cluster_healthy=true
+            break
+        fi
+        retry_count=$((retry_count + 1))
+        log_warning "Cluster health check failed (attempt $retry_count/$max_retries), retrying in 5 seconds..."
+        sleep 5
+    done
+    
+    if [ "$cluster_healthy" = true ]; then
+        log_success "Cluster 'dev' is healthy, skipping creation"
+    else
+        log_warning "Cluster 'dev' exists but is unhealthy after $max_retries attempts, recreating..."
+        k3d cluster delete dev
+        log_step "Creating k3d cluster 'dev'..."
+        k3d cluster create --config "${here}/k3d.yaml"
+        log_success "Cluster 'dev' created successfully"
+    fi
+else
+    log_step "Creating k3d cluster 'dev'..."
+    k3d cluster create --config "${here}/k3d.yaml"
+    log_success "Cluster 'dev' created successfully"
+fi
 
 # Set kubectl context
 log_info "Setting kubectl context to k3d-dev..."
@@ -81,10 +110,29 @@ log_info "Updating Helm repository cache..."
 helm repo update
 log_success "Helm repositories updated"
 
-# Verify cluster is ready
+# Verify cluster is ready with retry
 log_info "Verifying cluster readiness..."
-kubectl get nodes
-log_success "Cluster is ready!"
+max_retries=5
+retry_count=0
+cluster_ready=false
+
+while [ $retry_count -lt $max_retries ]; do
+    if kubectl get nodes >/dev/null 2>&1; then
+        cluster_ready=true
+        break
+    fi
+    retry_count=$((retry_count + 1))
+    log_warning "Cluster readiness check failed (attempt $retry_count/$max_retries), retrying in 10 seconds..."
+    sleep 10
+done
+
+if [ "$cluster_ready" = true ]; then
+    kubectl get nodes
+    log_success "Cluster is ready!"
+else
+    log_error "Cluster failed to become ready after $max_retries attempts"
+    exit 1
+fi
 
 log_step "Bootstrap completed successfully! 🎉"
 log_info "Next steps:"

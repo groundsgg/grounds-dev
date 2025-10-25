@@ -17,6 +17,21 @@ The `make up` command will automatically install missing prerequisites and deplo
 - **Agones** for game server hosting in `games` namespace
 - **Dummy HTTP server** for testing in `infra` namespace
 
+## 🔐 Docker Hub Authentication
+
+To avoid image pull failures and rate limiting, set your Docker Hub credentials before creating the cluster:
+
+```bash
+# Set Docker Hub credentials
+export DOCKER_USERNAME="your-dockerhub-username"
+export DOCKER_PASSWORD="your-dockerhub-token"
+```
+
+**Security Note**: Use a Docker Hub access token instead of your password:
+1. Go to Docker Hub → Account Settings → Security
+2. Create a new access token
+3. Use the token as `DOCKER_PASSWORD`
+
 ## 🛠️ Essential Commands
 
 | Command | Description |

@@ -31,7 +31,7 @@ releases:
       - values/agones.values.yaml
     # Wait for Agones controller to be ready
     wait: true
-    timeout: 300
+    timeout: 600
     # Install CRDs automatically
-    createNamespace: false
+    createNamespace: true
 

@@ -10,6 +10,14 @@ agones:
   ping:
     install: false
 
+  # Allocator service configuration
+  allocator:
+    service:
+      http:
+        port: 10443
+      grpc:
+        port: 10444
+
   # Controller configuration
   controller:
     # Resource limits for local development
@@ -21,19 +29,19 @@ agones:
         cpu: 500m      # 0.5 CPU cores
         memory: 512Mi  # 512 MB RAM
 
-    # Health checks
+    # Health checks - optimized for local development
     livenessProbe:
       enabled: true
-      initialDelaySeconds: 30
-      periodSeconds: 10
+      initialDelaySeconds: 15
+      periodSeconds: 5
       timeoutSeconds: 5
       failureThreshold: 3
       successThreshold: 1
 
     readinessProbe:
       enabled: true
-      initialDelaySeconds: 5
-      periodSeconds: 10
+      initialDelaySeconds: 3
+      periodSeconds: 5
       timeoutSeconds: 5
       failureThreshold: 3
       successThreshold: 1
