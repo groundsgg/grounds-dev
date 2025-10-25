@@ -93,11 +93,11 @@ log_success "Kubeconfig exported to ./kubeconfig"
 
 # Create namespaces
 log_info "Creating namespaces..."
-for ns in infra databases games; do
+for ns in infra databases games api; do
     log_info "Creating namespace: ${ns}"
     kubectl create namespace "${ns}" --dry-run=client -o yaml | kubectl apply -f -
 done
-log_success "Namespaces created: infra, databases, games"
+log_success "Namespaces created: infra, databases, games, api"
 
 # Add Helm repositories
 log_step "Adding Helm repositories..."

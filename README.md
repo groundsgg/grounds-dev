@@ -16,6 +16,7 @@ The `make up` command will automatically install missing prerequisites and deplo
 - **PostgreSQL database** in `databases` namespace
 - **Agones** for game server hosting in `games` namespace
 - **Dummy HTTP server** for testing in `infra` namespace
+- **API namespace** for API services and microservices
 
 ## 🔐 Docker Hub Authentication
 
@@ -91,6 +92,19 @@ kubectl get fleets -n games
 kubectl get gameservers -n games
 ```
 
+
+### API Services
+- **Namespace**: `api`
+- **Purpose**: Host API services and microservices
+
+```bash
+# Deploy API services to the api namespace
+kubectl apply -f manifests/ -n api
+
+# Check API services
+kubectl get pods -n api
+kubectl get services -n api
+```
 
 ### Dummy HTTP Server (Testing)
 - **URL**: http://localhost/demo
