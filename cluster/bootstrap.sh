@@ -91,6 +91,34 @@ log_info "Exporting kubeconfig to ./kubeconfig..."
 k3d kubeconfig get dev > "${here}/../kubeconfig"
 log_success "Kubeconfig exported to ./kubeconfig"
 
+# Install kubeconfig for kubectx if available
+if command -v kubectx >/dev/null 2>&1; then
+    log_info "kubectx detected, installing kubeconfig to ~/.kube/config..."
+    
+    # Ensure ~/.kube directory exists
+    mkdir -p ~/.kube
+    
+    # Backup existing config if it exists
+    if [ -f ~/.kube/config ]; then
+        backup_file="~/.kube/config.backup.$(date +%Y%m%d-%H%M%S)"
+        cp ~/.kube/config "$backup_file"
+        log_info "Backed up existing kubeconfig to $backup_file"
+    fi
+    
+    # Merge kubeconfigs using kubectl's native merge capability
+    if [ -f ~/.kube/config ]; then
+        KUBECONFIG=~/.kube/config:"${here}/../kubeconfig" kubectl config view --flatten > /tmp/merged-config
+        mv /tmp/merged-config ~/.kube/config
+    else
+        cp "${here}/../kubeconfig" ~/.kube/config
+    fi
+    
+    log_success "kubeconfig installed to ~/.kube/config for kubectx"
+    log_info "You can now use: kubectx k3d-dev"
+else
+    log_info "kubectx not found, skipping kubeconfig installation to ~/.kube/"
+fi
+
 # Create namespaces
 log_info "Creating namespaces..."
 for ns in infra databases games api; do

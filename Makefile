@@ -92,6 +92,13 @@ clean: ## Clean up all resources
 	@echo -e "$(YELLOW)⚠️  Cleaning up all resources...$(NC)"
 	@k3d cluster delete dev || true
 	@rm -f kubeconfig || true
+	@if [ -f ~/.kube/config ]; then \
+		echo -e "$(BLUE)ℹ️  Cleaning k3d-dev from ~/.kube/config...$(NC)"; \
+		kubectl config delete-context k3d-dev || true; \
+		kubectl config delete-cluster k3d-dev || true; \
+		kubectl config delete-user admin@k3d-dev || true; \
+		echo -e "$(GREEN)✅ k3d-dev context removed from ~/.kube/config$(NC)"; \
+	fi
 	@echo -e "$(GREEN)✅ Cleanup completed$(NC)"
 
 .PHONY: test
