@@ -96,24 +96,18 @@ if command -v kubectx >/dev/null 2>&1; then
     log_info "kubectx detected, installing kubeconfig to ~/.kube/config..."
     
     # Ensure ~/.kube directory exists
-    mkdir -p ~/.kube
-    
-    # Backup existing config if it exists
-    if [ -f ~/.kube/config ]; then
-        backup_file="~/.kube/config.backup.$(date +%Y%m%d-%H%M%S)"
-        cp ~/.kube/config "$backup_file"
-        log_info "Backed up existing kubeconfig to $backup_file"
-    fi
+    mkdir -p "$HOME/.kube"
     
     # Merge kubeconfigs using kubectl's native merge capability
-    if [ -f ~/.kube/config ]; then
-        KUBECONFIG=~/.kube/config:"${here}/../kubeconfig" kubectl config view --flatten > /tmp/merged-config
-        mv /tmp/merged-config ~/.kube/config
+    if [ -f "$HOME/.kube/config" ]; then
+        KUBECONFIG="$HOME/.kube/config:${here}/../kubeconfig" kubectl config view --flatten > /tmp/merged-config
+        mv /tmp/merged-config "$HOME/.kube/config"
+        log_success "k3d-dev context merged into ~/.kube/config"
     else
-        cp "${here}/../kubeconfig" ~/.kube/config
+        cp "${here}/../kubeconfig" "$HOME/.kube/config"
+        log_success "kubeconfig installed to ~/.kube/config"
     fi
     
-    log_success "kubeconfig installed to ~/.kube/config for kubectx"
     log_info "You can now use: kubectx k3d-dev"
 else
     log_info "kubectx not found, skipping kubeconfig installation to ~/.kube/"
