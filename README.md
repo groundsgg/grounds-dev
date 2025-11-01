@@ -18,7 +18,9 @@ The `make up` command will automatically install missing prerequisites and deplo
 - **Dummy HTTP server** for testing in `infra` namespace
 - **API namespace** for API services and microservices
 
-## 🔐 Docker Hub Authentication
+## 🔐 Authentication
+
+### Docker Hub Authentication
 
 To avoid image pull failures and rate limiting, set your Docker Hub credentials before creating the cluster:
 
@@ -32,6 +34,36 @@ export DOCKER_PASSWORD="your-dockerhub-token"
 1. Go to Docker Hub → Account Settings → Security
 2. Create a new access token
 3. Use the token as `DOCKER_PASSWORD`
+
+### GitHub Container Registry (GHCR) Authentication
+
+To pull private images from GitHub Container Registry, configure your GHCR credentials in the `.env` file:
+
+```bash
+# Copy the example file and edit it
+cp .env.example .env
+# Edit .env and add your credentials
+```
+
+Add the following to your `.env` file:
+```bash
+GHCR_USERNAME=your-github-username
+GHCR_TOKEN=your-github-personal-access-token
+```
+
+**Creating a GitHub Personal Access Token (PAT)**:
+1. Go to GitHub → Settings → Developer settings → Personal access tokens → Tokens (classic)
+2. Click "Generate new token (classic)"
+3. Select the `read:packages` permission
+4. Generate and copy the token
+5. Add it to your `.env` file as `GHCR_TOKEN`
+
+The bootstrap script automatically:
+- Loads credentials from `.env` file
+- Creates a global pull secret (`ghcr-pull-secret`) in all namespaces
+- Configures all default service accounts to use the GHCR pull secret
+
+This enables pulling private GHCR images without specifying `imagePullSecrets` in your Pod specs.
 
 ## 🛠️ Essential Commands
 

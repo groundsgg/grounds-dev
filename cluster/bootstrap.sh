@@ -121,6 +121,79 @@ for ns in infra databases games api; do
 done
 log_success "Namespaces created: infra, databases, games, api"
 
+# Load .env file if it exists
+env_file="${here}/../.env"
+if [ -f "${env_file}" ]; then
+    log_info "Loading environment variables from .env file..."
+    set -a
+    # shellcheck source=/dev/null
+    source "${env_file}"
+    set +a
+    log_success "Environment variables loaded from .env"
+else
+    log_warning ".env file not found at ${env_file}"
+fi
+
+# Create GHCR pull secret if credentials are provided
+if [ -n "${GHCR_USERNAME:-}" ] && [ -n "${GHCR_TOKEN:-}" ]; then
+    log_step "Creating GHCR pull secret..."
+    
+    # Create secret in default namespace
+    log_info "Creating ghcr-pull-secret in default namespace..."
+    kubectl create secret docker-registry ghcr-pull-secret \
+        --docker-server=ghcr.io \
+        --docker-username="${GHCR_USERNAME}" \
+        --docker-password="${GHCR_TOKEN}" \
+        --namespace=default \
+        --dry-run=client -o yaml | kubectl apply -f -
+    log_success "GHCR pull secret created in default namespace"
+    
+    # Function to patch service account with GHCR pull secret
+    patch_service_account() {
+        local namespace=$1
+        # Check if the secret already exists in imagePullSecrets
+        if kubectl get serviceaccount default -n "${namespace}" -o jsonpath='{.imagePullSecrets[*].name}' 2>/dev/null | grep -q "ghcr-pull-secret"; then
+            log_info "GHCR pull secret already configured in default service account for namespace: ${namespace}"
+        else
+            log_info "Patching default service account in namespace: ${namespace}"
+            # Create imagePullSecrets array if it doesn't exist
+            if ! kubectl get serviceaccount default -n "${namespace}" -o jsonpath='{.imagePullSecrets}' 2>/dev/null | grep -q "."; then
+                kubectl patch serviceaccount default \
+                    --namespace="${namespace}" \
+                    --type=json \
+                    -p='[{"op": "add", "path": "/imagePullSecrets", "value": []}]' || true
+            fi
+            # Add the secret to imagePullSecrets
+            kubectl patch serviceaccount default \
+                --namespace="${namespace}" \
+                --type=json \
+                -p='[{"op": "add", "path": "/imagePullSecrets/-", "value": {"name": "ghcr-pull-secret"}}]' || true
+            log_success "Default service account patched in namespace: ${namespace}"
+        fi
+    }
+    
+    # Patch default service account in default namespace
+    patch_service_account default
+    
+    # Create secret and patch service accounts in all namespaces
+    for ns in infra databases games api; do
+        log_info "Creating ghcr-pull-secret in namespace: ${ns}"
+        kubectl create secret docker-registry ghcr-pull-secret \
+            --docker-server=ghcr.io \
+            --docker-username="${GHCR_USERNAME}" \
+            --docker-password="${GHCR_TOKEN}" \
+            --namespace="${ns}" \
+            --dry-run=client -o yaml | kubectl apply -f -
+        
+        patch_service_account "${ns}"
+    done
+    
+    log_success "GHCR pull secret configured globally across all namespaces"
+else
+    log_warning "GHCR credentials not found (GHCR_USERNAME or GHCR_TOKEN missing), skipping GHCR pull secret creation"
+    log_info "To enable GHCR authentication, set GHCR_USERNAME and GHCR_TOKEN in your .env file"
+fi
+
 # Add Helm repositories
 log_step "Adding Helm repositories..."
 helm repo add bitnami https://charts.bitnami.com/bitnami
