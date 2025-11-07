@@ -113,13 +113,55 @@ else
     log_info "kubectx not found, skipping kubeconfig installation to ~/.kube/"
 fi
 
+# Install OLM (Operator Lifecycle Manager)
+log_step "Installing OLM (Operator Lifecycle Manager) v0.35.0..."
+if kubectl get deployment olm-operator -n olm >/dev/null 2>&1; then
+    log_info "OLM is already installed, skipping installation"
+else
+    log_info "Downloading OLM installation script..."
+    install_script="/tmp/olm-install.sh"
+    curl -L https://github.com/operator-framework/operator-lifecycle-manager/releases/download/v0.35.0/install.sh -o "${install_script}"
+    chmod +x "${install_script}"
+    
+    log_info "Installing OLM v0.35.0..."
+    "${install_script}" v0.35.0
+    
+    # Wait for OLM to be ready
+    log_info "Waiting for OLM to be ready..."
+    max_retries=30
+    retry_count=0
+    olm_ready=false
+    
+    while [ $retry_count -lt $max_retries ]; do
+        if kubectl get deployment olm-operator -n olm >/dev/null 2>&1 && \
+           kubectl get deployment catalog-operator -n olm >/dev/null 2>&1 && \
+           kubectl rollout status deployment/olm-operator -n olm --timeout=10s >/dev/null 2>&1 && \
+           kubectl rollout status deployment/catalog-operator -n olm --timeout=10s >/dev/null 2>&1; then
+            olm_ready=true
+            break
+        fi
+        retry_count=$((retry_count + 1))
+        log_info "Waiting for OLM deployments (attempt $retry_count/$max_retries)..."
+        sleep 10
+    done
+    
+    if [ "$olm_ready" = true ]; then
+        log_success "OLM installed and ready!"
+    else
+        log_warning "OLM installation may still be in progress, continuing..."
+    fi
+    
+    # Clean up installation script
+    rm -f "${install_script}"
+fi
+
 # Create namespaces
 log_info "Creating namespaces..."
-for ns in infra databases games api; do
+for ns in infra databases games api keycloak; do
     log_info "Creating namespace: ${ns}"
     kubectl create namespace "${ns}" --dry-run=client -o yaml | kubectl apply -f -
 done
-log_success "Namespaces created: infra, databases, games, api"
+log_success "Namespaces created: infra, databases, games, api, keycloak"
 
 # Load .env file if it exists
 env_file="${here}/../.env"
@@ -176,7 +218,7 @@ if [ -n "${GHCR_USERNAME:-}" ] && [ -n "${GHCR_TOKEN:-}" ]; then
     patch_service_account default
     
     # Create secret and patch service accounts in all namespaces
-    for ns in infra databases games api; do
+    for ns in infra databases games api keycloak; do
         log_info "Creating ghcr-pull-secret in namespace: ${ns}"
         kubectl create secret docker-registry ghcr-pull-secret \
             --docker-server=ghcr.io \

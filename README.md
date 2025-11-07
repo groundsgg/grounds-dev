@@ -1,165 +1,145 @@
-# Grounds Development Infrastructure (grounds-dev) 🚀
+<!-- markdownlint-configure-file {
+  "MD013": {
+    "code_blocks": false,
+    "tables": false
+  },
+  "MD033": false,
+  "MD041": false
+} -->
 
-A local development infrastructure that provisions a k3d Kubernetes cluster with PostgreSQL and Agones (game server hosting).
+<div align="center" markdown="1">
 
-## 🎯 Quick Start
+# Helmfile
 
-```bash
-# Clone and start everything
-git clone <repository-url>
-cd grounds-dev
-make up
+[![Tests](https://github.com/helmfile/helmfile/actions/workflows/ci.yaml/badge.svg?branch=main)](https://github.com/helmfile/helmfile/actions/workflows/ci.yaml?query=branch%3Amain)
+[![Container Image Repository on GHCR](https://ghcr-badge.deta.dev/helmfile/helmfile/latest_tag?trim=major&label=latest "Docker Repository on ghcr")](https://github.com/helmfile/helmfile/pkgs/container/helmfile)
+[![Go Report Card](https://goreportcard.com/badge/github.com/helmfile/helmfile)](https://goreportcard.com/report/github.com/helmfile/helmfile)
+[![Slack Community #helmfile](https://slack.sweetops.com/badge.svg)](https://slack.sweetops.com)
+[![Documentation](https://readthedocs.org/projects/helmfile/badge/?version=latest&style=flat)](https://helmfile.readthedocs.io/en/latest/)
+
+Deploy Kubernetes Helm Charts
+<br />
+
+</div>
+
+English | [简体中文](./README-zh_CN.md)
+
+## About
+
+Helmfile is a declarative spec for deploying helm charts. It lets you...
+
+* Keep a directory of chart value files and maintain changes in version control.
+* Apply CI/CD to configuration changes.
+* Periodically sync to avoid skew in environments.
+
+To avoid upgrades for each iteration of `helm`, the `helmfile` executable delegates to `helm` - as a result, `helm` must be installed.
+
+## Highlights
+
+**Declarative**: Write, version-control, apply the desired state file for visibility and reproducibility.
+
+**Modules**: Modularize common patterns of your infrastructure, distribute it via Git, S3, etc. to be reused across the entire company (See [#648](https://github.com/roboll/helmfile/pull/648))
+
+**Versatility**: Manage your cluster consisting of charts, [kustomizations](https://github.com/kubernetes-sigs/kustomize), and directories of Kubernetes resources, turning everything to Helm releases (See [#673](https://github.com/roboll/helmfile/pull/673))
+
+**Patch**: JSON/Strategic-Merge Patch Kubernetes resources before `helm-install`ing, without forking upstream charts (See [#673](https://github.com/roboll/helmfile/pull/673))
+
+## Status
+
+March 2022 Update - The helmfile project has been moved to [helmfile/helmfile](https://github.com/helmfile/helmfile) from the former home `roboll/helmfile`. Please see roboll/helmfile#1824 for more information.
+
+Even though Helmfile is used in production environments [across multiple organizations](USERS.md), it is still in its early stage of development, hence versioned 0.x.
+
+Helmfile complies to Semantic Versioning 2.0.0 in which v0.x means that there could be backward-incompatible changes for every release.
+
+Note that we will try our best to document any backward incompatibility. And in reality, helmfile had no breaking change for a year or so.
+
+
+## Installation
+
+**1: Binary Installation**
+
+download one of [releases](https://github.com/helmfile/helmfile/releases)
+
+**2: Package Manager**
+
+* Archlinux: install via `pacman -S helmfile`
+* openSUSE: install via `zypper in helmfile` assuming you are on Tumbleweed; if you are on Leap you must add the [kubic](https://download.opensuse.org/repositories/devel:/kubic/) repo for your distribution version once before that command, e.g. `zypper ar https://download.opensuse.org/repositories/devel:/kubic/openSUSE_Leap_\$releasever kubic`
+* Windows (using [scoop](https://scoop.sh/)): `scoop install helmfile`
+* macOS (using [homebrew](https://brew.sh/)): `brew install helmfile`
+
+**3: Container**
+
+For more details, see [run as a container](https://helmfile.readthedocs.io/en/latest/#running-as-a-container)
+
+> Make sure to run `helmfile init` once after installation. Helmfile uses the [helm-diff](https://github.com/databus23/helm-diff) plugin.
+
+## Getting Started
+
+Let's start with a simple `helmfile` and gradually improve it to fit your use-case!
+
+Suppose the `helmfile.yaml` representing the desired state of your helm releases looks like:
+
+```yaml
+repositories:
+- name: prometheus-community
+  url: https://prometheus-community.github.io/helm-charts
+
+releases:
+- name: prom-norbac-ubuntu
+  namespace: prometheus
+  chart: prometheus-community/prometheus
+  set:
+  - name: rbac.create
+    value: false
 ```
 
-The `make up` command will automatically install missing prerequisites and deploy:
-- **k3d Kubernetes cluster** (1 server + 2 agents)
-- **PostgreSQL database** in `databases` namespace
-- **Agones** for game server hosting in `games` namespace
-- **Dummy HTTP server** for testing in `infra` namespace
-- **API namespace** for API services and microservices
+Sync your Kubernetes cluster state to the desired one by running:
 
-## 🔐 Authentication
-
-### Docker Hub Authentication
-
-To avoid image pull failures and rate limiting, set your Docker Hub credentials before creating the cluster:
-
-```bash
-# Set Docker Hub credentials
-export DOCKER_USERNAME="your-dockerhub-username"
-export DOCKER_PASSWORD="your-dockerhub-token"
+```console
+helmfile apply
 ```
 
-**Security Note**: Use a Docker Hub access token instead of your password:
-1. Go to Docker Hub → Account Settings → Security
-2. Create a new access token
-3. Use the token as `DOCKER_PASSWORD`
+Congratulations! You now have your first Prometheus deployment running inside
+ your cluster.
 
-### GitHub Container Registry (GHCR) Authentication
+Iterate on the `helmfile.yaml` by referencing:
 
-To pull private images from GitHub Container Registry, configure your GHCR credentials in the `.env` file:
+* [Configuration](https://helmfile.readthedocs.io/en/latest/#configuration)
+* [CLI reference](https://helmfile.readthedocs.io/en/latest/#cli-reference)
+* [Helmfile Best Practices Guide](https://helmfile.readthedocs.io/en/latest/writing-helmfile/)
 
-```bash
-# Copy the example file and edit it
-cp .env.example .env
-# Edit .env and add your credentials
-```
+## Docs
 
-Add the following to your `.env` file:
-```bash
-GHCR_USERNAME=your-github-username
-GHCR_TOKEN=your-github-personal-access-token
-```
+Please read [complete documentation](https://helmfile.readthedocs.io/)
 
-**Creating a GitHub Personal Access Token (PAT)**:
-1. Go to GitHub → Settings → Developer settings → Personal access tokens → Tokens (classic)
-2. Click "Generate new token (classic)"
-3. Select the `read:packages` permission
-4. Generate and copy the token
-5. Add it to your `.env` file as `GHCR_TOKEN`
+## Contributing
 
-The bootstrap script automatically:
-- Loads credentials from `.env` file
-- Creates a global pull secret (`ghcr-pull-secret`) in all namespaces
-- Configures all default service accounts to use the GHCR pull secret
+Welcome to contribute together to make helmfile better: [contributing doc](https://helmfile.readthedocs.io/en/latest/contributing/)
 
-This enables pulling private GHCR images without specifying `imagePullSecrets` in your Pod specs.
+## Attribution
 
-## 🛠️ Essential Commands
+We use:
 
-| Command | Description |
-|---------|-------------|
-| `make up` | Start complete development environment |
-| `make down` | Stop and delete the cluster |
-| `make status` | Show cluster and deployment status |
-| `make logs` | Show logs for all services |
-| `make test` | Test the deployment |
-| `make export-kubeconfig` | Export cluster kubeconfig to ./kubeconfig |
-| `make help` | Show all available commands |
+* [semtag](https://github.com/pnikosis/semtag) for automated semver tagging.
+I greatly appreciate the author(pnikosis)'s effort on creating it and their
+kindness to share it!
 
-### Development Helpers
+## Users
 
-| Command | Description |
-|---------|-------------|
-| `make port-forward` | Port forward services to localhost |
-| `make db-connect` | Connect to PostgreSQL database |
-| `make shell` | Open shell in PostgreSQL pod |
+Helmfile has been used by many users in production:
 
-### Kubeconfig Access
+* [gitlab.com](https://gitlab.com)
+* [reddit.com](https://reddit.com)
+* [Jenkins](https://jenkins.io)
+* ...
 
-The cluster kubeconfig is automatically exported to `./kubeconfig` during setup.
+For more users, please see: [Users](https://helmfile.readthedocs.io/en/latest/users/)
 
-```bash
-# Use the local kubeconfig
-export KUBECONFIG=$(pwd)/kubeconfig
-kubectl get nodes
+## License
 
-# Or manually re-export
-make export-kubeconfig
-```
+[MIT](https://github.com/helmfile/helmfile/blob/main/LICENSE)
 
-## 🌐 Service Access
+## Star History
 
-### PostgreSQL Database
-- **Namespace**: `databases`
-- **Credentials**: `app/app`
-- **Database**: `app`
-- **Port**: `5432`
-
-```bash
-# Connect to database
-make db-connect
-
-# Port forward to access locally
-kubectl port-forward -n databases svc/postgresql 5432:5432
-```
-
-### Agones Game Server Platform
-- **Namespace**: `games`
-- **CRDs**: `fleets.agones.dev`, `gameservers.agones.dev`
-
-```bash
-# Check Agones status
-kubectl get fleets -n games
-kubectl get gameservers -n games
-```
-
-
-### API Services
-- **Namespace**: `api`
-- **Purpose**: Host API services and microservices
-
-```bash
-# Deploy API services to the api namespace
-kubectl apply -f manifests/ -n api
-
-# Check API services
-kubectl get pods -n api
-kubectl get services -n api
-```
-
-### Dummy HTTP Server (Testing)
-- **URL**: http://localhost/demo
-- **Namespace**: `infra`
-
-```bash
-# Test the server
-curl http://localhost/demo
-```
-
-## 🐛 Quick Troubleshooting
-
-```bash
-# Check cluster status
-kubectl get pods -A
-
-# Check logs
-make logs
-
-# Restart everything
-make down && make up
-```
-
-## 🔒 Security Note
-
-⚠️ **Development only!** Default credentials (app/app) are used. Not for production.
+[![Star History Chart](https://api.star-history.com/svg?repos=helmfile/helmfile&type=Date)](https://star-history.com/#helmfile/helmfile&Date)

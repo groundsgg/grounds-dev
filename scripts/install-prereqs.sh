@@ -2,7 +2,7 @@
 # Prerequisites installation script for Grounds Development Infrastructure
 # Automatically installs missing dependencies for local Kubernetes development
 
-set -euo pipefail
+# set -euo pipefail
 
 # Colors and emojis for fancy console output
 readonly RED='\033[0;31m'

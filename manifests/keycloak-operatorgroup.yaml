@@ -1,0 +1,15 @@
+# OperatorGroup for Keycloak Operator
+# Defines the scope where the Keycloak operator can operate
+# Must be in the same namespace as the Subscription
+
+apiVersion: operators.coreos.com/v1
+kind: OperatorGroup
+metadata:
+  name: keycloak-operatorgroup
+  namespace: keycloak
+spec:
+  # Empty targetNamespaces means the operator can only work in this namespace
+  # This is the safest option for namespace-scoped operators
+  targetNamespaces:
+    - keycloak
+

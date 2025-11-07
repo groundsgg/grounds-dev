@@ -1,0 +1,18 @@
+# OperatorHub.io Catalog Source
+# Provides access to community operators including Keycloak Operator
+# This catalog source is required for OLM to find and install operators from OperatorHub
+
+apiVersion: operators.coreos.com/v1alpha1
+kind: CatalogSource
+metadata:
+  name: operatorhubio-catalog
+  namespace: olm
+spec:
+  sourceType: grpc
+  image: quay.io/operatorhubio/catalog:latest
+  displayName: OperatorHub.io Catalog
+  publisher: OperatorHub.io
+  updateStrategy:
+    registryPoll:
+      interval: 30m
+
