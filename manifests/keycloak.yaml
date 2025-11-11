@@ -16,15 +16,10 @@ spec:
       name: keycloak-db-secret
       key: password
   http:
-    # tlsSecret: example-tls-secret
+    tlsSecret: example-tls-secret
     httpEnabled: true
   ingress:
-    enabled: true
-    tlsSecret: example-tls-secret # TLS termination at ingress = edge mode
-    annotations:
-      # Ensure Traefik sets X-Forwarded-* headers correctly for TLS termination
-      # Middleware reference format: namespace-name@kubernetescrd
-      traefik.ingress.kubernetes.io/router.middlewares: keycloak-keycloak-headers@kubernetescrd
+    enabled: false
   hostname:
     hostname: accounts.grounds.gg
     strict: false

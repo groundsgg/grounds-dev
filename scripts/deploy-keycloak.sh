@@ -145,14 +145,52 @@ main() {
         log_warning "Traefik middleware may already exist or CRD not ready"
     fi
     
+    # Deploy Traefik ServersTransport for insecure backend connections
+    log_info "Deploying Traefik ServersTransport..."
+    if kubectl apply -f "${project_root}/manifests/traefik-keycloak-servers-transport.yaml" 2>/dev/null; then
+        log_success "Traefik ServersTransport created"
+    else
+        log_warning "Traefik ServersTransport may already exist or CRD not ready"
+    fi
+    
     # Deploy Keycloak instance
     log_info "Deploying Keycloak instance..."
     kubectl apply -f "${project_root}/manifests/keycloak.yaml"
     log_success "Keycloak instance deployment initiated"
     
+    # Wait for Keycloak service to be available
+    log_info "Waiting for Keycloak service to be available..."
+    timeout=180
+    service_ready=false
+    
+    while [ $timeout -gt 0 ]; do
+        if kubectl get svc keycloak-service -n keycloak >/dev/null 2>&1; then
+            log_success "Keycloak service is available!"
+            service_ready=true
+            break
+        fi
+        log_info "Waiting for Keycloak service (${timeout} seconds remaining)..."
+        sleep 5
+        timeout=$((timeout - 5))
+    done
+    
+    if [ "$service_ready" = false ]; then
+        log_warning "Keycloak service not found yet, but continuing with IngressRoute deployment..."
+        log_warning "The service may still be created by the operator"
+    fi
+    
+    # Deploy Traefik IngressRoute (custom ingress configuration)
+    log_info "Deploying Traefik IngressRoute for Keycloak..."
+    if kubectl apply -f "${project_root}/manifests/traefik-keycloak-ingressroute.yaml" 2>/dev/null; then
+        log_success "Traefik IngressRoute created"
+    else
+        log_warning "Traefik IngressRoute may already exist or CRD not ready"
+    fi
+    
     log_step "Keycloak deployment completed! 🎉"
     log_info "Check status with: kubectl get keycloak -n keycloak"
     log_info "Check pods with: kubectl get pods -n keycloak"
+    log_info "Check ingress with: kubectl get ingressroute -n keycloak"
 }
 
 # Run main function

@@ -1,0 +1,17 @@
+# Traefik ServersTransport to allow non-valid certificates when connecting to Keycloak backend
+# This is useful for development environments with self-signed certificates
+# WARNING: insecureSkipVerify disables certificate validation - use only in trusted environments
+apiVersion: traefik.io/v1alpha1
+kind: ServersTransport
+metadata:
+  name: keycloak-insecure-transport
+  namespace: keycloak
+spec:
+  insecureSkipVerify: true
+  # Optional: specify root CAs if you have them
+  # rootCAs:
+  #   - /path/to/ca.crt
+
+
+
+
