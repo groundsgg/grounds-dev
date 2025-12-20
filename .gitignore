@@ -1,6 +1,3 @@
-# Grounds Development Infrastructure (grounds-dev) .gitignore
-# Ignores temporary files, build artifacts, and sensitive data
-
 # Kubernetes and Helm artifacts
 *.kubeconfig
 *.kubeconfig.backup

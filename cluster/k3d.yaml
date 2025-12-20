@@ -1,7 +1,3 @@
-# k3d cluster configuration for local development
-# This creates a lightweight Kubernetes cluster with 1 server + 2 agents
-# Includes integrated registry and ingress port mapping for local development
-
 apiVersion: k3d.io/v1alpha5
 kind: Simple
 metadata:
@@ -11,7 +7,6 @@ metadata:
 servers: 1
 agents: 2
 
-# Use k3s version 1.34.1 for stability and compatibility
 image: rancher/k3s:v1.34.1-k3s1
 
 # Port mappings for ingress traffic
@@ -41,15 +36,6 @@ registries:
           username: ${DOCKER_USERNAME}
           password: ${DOCKER_PASSWORD}
 
-# k3d and k3s options
 options:
   k3d:
     wait: true  # Wait for cluster to be ready before returning
-  # k3s:
-  #   extraArgs:
-  #     # Keep ServiceLB enabled for LoadBalancer services
-  #     - arg: --disable=servicelb=false
-  #       nodeFilters: [server:0]
-  #     # Keep Traefik enabled for ingress controller
-  #     - arg: --disable=traefik=false
-  #       nodeFilters: [server:0]

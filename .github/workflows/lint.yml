@@ -35,7 +35,7 @@ jobs:
           sudo mv kubectl /usr/local/bin/
 
           # Install helmfile
-          curl -L https://github.com/helmfile/helmfile/releases/download/v0.156.0/helmfile_0.156.0_linux_amd64.tar.gz | tar xz
+          curl -L https://github.com/helmfile/helmfile/releases/download/v1.2.3/helmfile_1.2.3_linux_amd64.tar.gz | tar xz
           sudo mv helmfile /usr/local/bin/
 
           echo "✅ All prerequisites installed successfully"
