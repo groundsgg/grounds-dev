@@ -1,7 +1,3 @@
-# Helmfile configuration for grounds-dev
-# Orchestrates deployment of PostgreSQL and Agones
-# Uses declarative approach with proper dependency management
-
 # Helm repositories
 repositories:
   - name: bitnami

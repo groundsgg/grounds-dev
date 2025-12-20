@@ -1,6 +1,3 @@
-# yamllint configuration for Grounds Development Infrastructure
-# Ensures consistent YAML formatting across the repository
-
 extends: default
 
 rules:
