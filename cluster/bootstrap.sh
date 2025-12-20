@@ -79,16 +79,6 @@ fi
 if [[ -n "${GHCR_USERNAME:-}" && -n "${GHCR_TOKEN:-}" ]]; then
     log_step "Creating GHCR pull secret..."
     
-    # Create secret in default namespace
-    log_info "Creating ghcr-pull-secret in default namespace..."
-    kubectl create secret docker-registry ghcr-pull-secret \
-        --docker-server=ghcr.io \
-        --docker-username="${GHCR_USERNAME}" \
-        --docker-password="${GHCR_TOKEN}" \
-        --namespace=default \
-        --dry-run=client -o yaml | kubectl apply -f -
-    log_success "GHCR pull secret created in default namespace"
-    
     # Function to patch service account with GHCR pull secret
     patch_service_account() {
         local namespace=$1
@@ -97,24 +87,24 @@ if [[ -n "${GHCR_USERNAME:-}" && -n "${GHCR_TOKEN:-}" ]]; then
             log_info "GHCR pull secret already configured in default service account for namespace: ${namespace}"
         else
             log_info "Patching default service account in namespace: ${namespace}"
-            # Create imagePullSecrets array if it doesn't exist
-            if ! kubectl get serviceaccount default -n "${namespace}" -o jsonpath='{.imagePullSecrets}' 2>/dev/null | grep -q "."; then
+            local pull_secrets_raw
+            pull_secrets_raw="$(kubectl get serviceaccount default -n "${namespace}" -o jsonpath='{.imagePullSecrets}' 2>/dev/null || true)"
+            if [[ -z "${pull_secrets_raw}" ]]; then
+                # Initialize imagePullSecrets so we can append entries later.
                 kubectl patch serviceaccount default \
                     --namespace="${namespace}" \
                     --type=json \
-                    -p='[{"op": "add", "path": "/imagePullSecrets", "value": []}]' || true
+                    -p='[{"op": "add", "path": "/imagePullSecrets", "value": [{"name": "ghcr-pull-secret"}]}]'
+            else
+                # Add the secret to the existing list.
+                kubectl patch serviceaccount default \
+                    --namespace="${namespace}" \
+                    --type=json \
+                    -p='[{"op": "add", "path": "/imagePullSecrets/-", "value": {"name": "ghcr-pull-secret"}}]'
             fi
-            # Add the secret to imagePullSecrets
-            kubectl patch serviceaccount default \
-                --namespace="${namespace}" \
-                --type=json \
-                -p='[{"op": "add", "path": "/imagePullSecrets/-", "value": {"name": "ghcr-pull-secret"}}]' || true
             log_success "Default service account patched in namespace: ${namespace}"
         fi
     }
-    
-    # Patch default service account in default namespace
-    patch_service_account default
     
     # Create secret and patch service accounts in all namespaces
     for ns in infra databases games api; do
