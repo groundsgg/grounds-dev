@@ -14,65 +14,6 @@ command_exists() {
     fi
 }
 
-# Detect OS
-detect_os() {
-    if [[ "${OSTYPE}" == "linux-gnu"* ]]; then
-        local has_apt has_yum has_pacman
-        has_apt=$(command_exists apt-get)
-        has_yum=$(command_exists yum)
-        has_pacman=$(command_exists pacman)
-        
-        if [[ "${has_apt}" -eq 0 ]]; then
-            echo "ubuntu"
-        elif [[ "${has_yum}" -eq 0 ]]; then
-            echo "rhel"
-        elif [[ "${has_pacman}" -eq 0 ]]; then
-            echo "arch"
-        else
-            echo "linux"
-        fi
-    elif [[ "${OSTYPE}" == "darwin"* ]]; then
-        echo "macos"
-    elif [[ "${OSTYPE}" == "msys" ]] || [[ "${OSTYPE}" == "cygwin" ]]; then
-        echo "windows"
-    else
-        echo "unknown"
-    fi
-}
-
-# Install Docker
-install_docker() {
-    local os="$1"
-    log_info "Installing Docker..."
-    
-    case "${os}" in
-        "ubuntu")
-            local docker_exists
-            docker_exists=$(command_exists docker)
-            if [[ "${docker_exists}" -ne 0 ]]; then
-                curl -fsSL https://get.docker.com | sh
-                sudo usermod -aG docker "${USER}"
-                log_success "Docker installed. Please log out and back in for group changes to take effect."
-            else
-                log_success "Docker already installed"
-            fi
-            ;;
-        "macos")
-            local docker_exists
-            docker_exists=$(command_exists docker)
-            if [[ "${docker_exists}" -ne 0 ]]; then
-                log_warning "Please install Docker Desktop for macOS from https://www.docker.com/products/docker-desktop"
-                log_info "Or install via Homebrew: brew install --cask docker"
-            else
-                log_success "Docker already installed"
-            fi
-            ;;
-        *)
-            log_warning "Please install Docker manually for your OS"
-            ;;
-    esac
-}
-
 # Install k3d
 install_k3d() {
     local k3d_exists
@@ -151,75 +92,17 @@ install_devspace() {
 # Check Docker daemon
 check_docker_daemon() {
     if ! docker info >/dev/null 2>&1; then
-        log_warning "Docker daemon is not running. Please start Docker and try again."
-        log_info "On Linux: sudo systemctl start docker"
-        log_info "On macOS: Start Docker Desktop"
+        log_warning "Docker daemon is not running. Please install or start Docker and try again."
         return 1
     fi
     return 0
 }
 
-# Check prerequisites only
-check_prereqs() {
-    log_info "Checking prerequisites..."
-    local missing=()
-    local docker_exists k3d_exists kubectl_exists helm_exists helmfile_exists devspace_exists
-    
-    docker_exists=$(command_exists docker)
-    k3d_exists=$(command_exists k3d)
-    kubectl_exists=$(command_exists kubectl)
-    helm_exists=$(command_exists helm)
-    helmfile_exists=$(command_exists helmfile)
-    devspace_exists=$(command_exists devspace)
-    
-    if [[ "${docker_exists}" -ne 0 ]]; then
-        missing+=("docker")
-    fi
-    
-    if [[ "${k3d_exists}" -ne 0 ]]; then
-        missing+=("k3d")
-    fi
-    
-    if [[ "${kubectl_exists}" -ne 0 ]]; then
-        missing+=("kubectl")
-    fi
-    
-    if [[ "${helm_exists}" -ne 0 ]]; then
-        missing+=("helm")
-    fi
-    
-    if [[ "${helmfile_exists}" -ne 0 ]]; then
-        missing+=("helmfile")
-    fi
-    
-    if [[ "${devspace_exists}" -ne 0 ]]; then
-        missing+=("devspace")
-    fi
-    
-    if [[ ${#missing[@]} -eq 0 ]]; then
-        log_success "All prerequisites found"
-        return 0
-    else
-        log_warning "Missing prerequisites: ${missing[*]}"
-        return 1
-    fi
-}
-
 # Main installation function
 main() {
-    # Check if --check-only flag is provided
-    if [[ "${1:-}" == "--check-only" ]]; then
-        check_prereqs
-        return $?
-    fi
-    
     log_step "Checking and installing prerequisites for Grounds Development Infrastructure..."
     
-    local os=$(detect_os)
-    log_info "Detected OS: ${os}"
-    
     # Install prerequisites
-    install_docker "${os}"
     install_k3d
     install_kubectl
     install_helm

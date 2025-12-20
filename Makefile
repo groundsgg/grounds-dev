@@ -110,12 +110,6 @@ test: ## Test the deployment
 	@curl -s http://localhost/demo || echo -e "$(YELLOW)⚠️  Dummy server not accessible (may still be starting)$(NC)"
 	@echo -e "$(GREEN)✅ Tests completed$(NC)"
 
-# Utility targets
-.PHONY: check-prereqs
-check-prereqs: ## Check prerequisites
-	@echo -e "$(BLUE)ℹ️  Checking prerequisites...$(NC)"
-	@./scripts/install-prereqs.sh --check-only || true
-
 .PHONY: export-kubeconfig
 export-kubeconfig: ## Export k3d cluster kubeconfig to ./kubeconfig
 	@echo -e "$(BLUE)ℹ️  Exporting kubeconfig...$(NC)"
