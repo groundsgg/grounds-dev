@@ -1,43 +1,17 @@
 #!/usr/bin/env bash
-# Wait for Agones CRDs to be ready
-# Provides fancy console output with spinner and progress indicators
 
 set -euo pipefail
 
-# Colors and emojis for fancy console output
-readonly RED='\033[0;31m'
-readonly GREEN='\033[0;32m'
-readonly YELLOW='\033[1;33m'
-readonly BLUE='\033[0;34m'
-readonly PURPLE='\033[0;35m'
-readonly CYAN='\033[0;36m'
-readonly WHITE='\033[1;37m'
-readonly NC='\033[0m' # No Color
+here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "${here}/common.sh"
 
 # Spinner characters
 spinner_chars=("⠋" "⠙" "⠹" "⠸" "⠼" "⠴" "⠦" "⠧" "⠇" "⠏")
 spinner_index=0
 
-# Logging functions
-log_info() {
-    echo -e "${BLUE}ℹ️  $1${NC}"
-}
-
-log_success() {
-    echo -e "${GREEN}✅ $1${NC}"
-}
-
-log_warning() {
-    echo -e "${YELLOW}⚠️  $1${NC}"
-}
-
-log_error() {
-    echo -e "${RED}❌ $1${NC}"
-}
-
 # Spinner function
 show_spinner() {
-    printf "\r%s%s%s %s" "${PURPLE}" "${spinner_chars[${spinner_index}]}" "${NC}" "$1"
+    printf "\r%s %s" "${spinner_chars[${spinner_index}]}" "$1"
     spinner_index=$(( (spinner_index + 1) % ${#spinner_chars[@]} ))
 }
 

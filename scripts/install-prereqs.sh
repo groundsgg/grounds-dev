@@ -1,55 +1,26 @@
 #!/usr/bin/env bash
-# Prerequisites installation script for Grounds Development Infrastructure
-# Automatically installs missing dependencies for local Kubernetes development
 
 set -euo pipefail
 
-# Colors and emojis for fancy console output
-readonly RED='\033[0;31m'
-readonly GREEN='\033[0;32m'
-readonly YELLOW='\033[1;33m'
-readonly BLUE='\033[0;34m'
-readonly PURPLE='\033[0;35m'
-readonly CYAN='\033[0;36m'
-readonly WHITE='\033[1;37m'
-readonly NC='\033[0m' # No Color
-
-# Logging functions
-log_info() {
-    echo -e "${BLUE}ℹ️  $1${NC}"
-}
-
-log_success() {
-    echo -e "${GREEN}✅ $1${NC}"
-}
-
-log_warning() {
-    echo -e "${YELLOW}⚠️  $1${NC}"
-}
-
-log_error() {
-    echo -e "${RED}❌ $1${NC}"
-}
-
-log_step() {
-    echo -e "${PURPLE}🚀 $1${NC}"
-}
+here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "${here}/common.sh"
 
 # Check if command exists
 command_exists() {
-    command -v "$1" >/dev/null 2>&1
+    if command -v "$1" >/dev/null 2>&1; then
+        echo 0
+    else
+        echo 1
+    fi
 }
 
 # Detect OS
 detect_os() {
     if [[ "${OSTYPE}" == "linux-gnu"* ]]; then
         local has_apt has_yum has_pacman
-        command_exists apt-get
-        has_apt=$?
-        command_exists yum
-        has_yum=$?
-        command_exists pacman
-        has_pacman=$?
+        has_apt=$(command_exists apt-get)
+        has_yum=$(command_exists yum)
+        has_pacman=$(command_exists pacman)
         
         if [[ "${has_apt}" -eq 0 ]]; then
             echo "ubuntu"
@@ -77,8 +48,7 @@ install_docker() {
     case "${os}" in
         "ubuntu")
             local docker_exists
-            command_exists docker
-            docker_exists=$?
+            docker_exists=$(command_exists docker)
             if [[ "${docker_exists}" -ne 0 ]]; then
                 curl -fsSL https://get.docker.com | sh
                 sudo usermod -aG docker "${USER}"
@@ -89,8 +59,7 @@ install_docker() {
             ;;
         "macos")
             local docker_exists
-            command_exists docker
-            docker_exists=$?
+            docker_exists=$(command_exists docker)
             if [[ "${docker_exists}" -ne 0 ]]; then
                 log_warning "Please install Docker Desktop for macOS from https://www.docker.com/products/docker-desktop"
                 log_info "Or install via Homebrew: brew install --cask docker"
@@ -107,8 +76,7 @@ install_docker() {
 # Install k3d
 install_k3d() {
     local k3d_exists
-    command_exists k3d
-    k3d_exists=$?
+    k3d_exists=$(command_exists k3d)
     if [[ "${k3d_exists}" -ne 0 ]]; then
         log_info "Installing k3d..."
         curl -s https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh | bash
@@ -121,8 +89,7 @@ install_k3d() {
 # Install kubectl
 install_kubectl() {
     local kubectl_exists
-    command_exists kubectl
-    kubectl_exists=$?
+    kubectl_exists=$(command_exists kubectl)
     if [[ "${kubectl_exists}" -ne 0 ]]; then
         log_info "Installing kubectl..."
         local kubectl_version=$(curl -L -s https://dl.k8s.io/release/stable.txt)
@@ -138,8 +105,7 @@ install_kubectl() {
 # Install Helm
 install_helm() {
     local helm_exists
-    command_exists helm
-    helm_exists=$?
+    helm_exists=$(command_exists helm)
     if [[ "${helm_exists}" -ne 0 ]]; then
         log_info "Installing Helm..."
         curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
@@ -152,13 +118,15 @@ install_helm() {
 # Install Helmfile
 install_helmfile() {
     local helmfile_exists
-    command_exists helmfile
-    helmfile_exists=$?
+    helmfile_exists=$(command_exists helmfile)
     if [[ "${helmfile_exists}" -ne 0 ]]; then
         log_info "Installing Helmfile..."
-        local helmfile_version="v0.156.0"
-        curl -L "https://github.com/helmfile/helmfile/releases/download/${helmfile_version}/helmfile_${helmfile_version#v}_linux_amd64.tar.gz" | tar xz
-        sudo mv helmfile /usr/local/bin/
+        local helmfile_version="v1.2.3"
+        local tmp_dir
+        tmp_dir="$(mktemp -d)"
+        curl -L "https://github.com/helmfile/helmfile/releases/download/${helmfile_version}/helmfile_${helmfile_version#v}_linux_amd64.tar.gz" | tar -xz -C "${tmp_dir}"
+        sudo mv "${tmp_dir}/helmfile" /usr/local/bin/
+        rm -rf "${tmp_dir}"
         log_success "Helmfile installed"
     else
         log_success "Helmfile already installed"
@@ -197,18 +165,12 @@ check_prereqs() {
     local missing=()
     local docker_exists k3d_exists kubectl_exists helm_exists helmfile_exists devspace_exists
     
-    command_exists docker
-    docker_exists=$?
-    command_exists k3d
-    k3d_exists=$?
-    command_exists kubectl
-    kubectl_exists=$?
-    command_exists helm
-    helm_exists=$?
-    command_exists helmfile
-    helmfile_exists=$?
-    command_exists devspace
-    devspace_exists=$?
+    docker_exists=$(command_exists docker)
+    k3d_exists=$(command_exists k3d)
+    kubectl_exists=$(command_exists kubectl)
+    helm_exists=$(command_exists helm)
+    helmfile_exists=$(command_exists helmfile)
+    devspace_exists=$(command_exists devspace)
     
     if [[ "${docker_exists}" -ne 0 ]]; then
         missing+=("docker")
