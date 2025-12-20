@@ -5,7 +5,6 @@ set -euo pipefail
 here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${here}/common.sh"
 
-# Check if kubectl is available
 check_kubectl() {
     if ! command -v kubectl >/dev/null 2>&1; then
         log_error "kubectl is not installed or not in PATH"
@@ -13,8 +12,7 @@ check_kubectl() {
     fi
 }
 
-# Check cluster connectivity
-check_cluster() {
+check_cluster_connectivity() {
     log_info "Checking cluster connectivity..."
     if ! kubectl cluster-info >/dev/null 2>&1; then
         log_error "Cannot connect to Kubernetes cluster"
@@ -23,7 +21,6 @@ check_cluster() {
     log_success "Cluster is accessible"
 }
 
-# Get cluster status
 get_cluster_status() {
     log_step "Getting cluster status..."
     
@@ -40,7 +37,6 @@ get_cluster_status() {
     kubectl get services -A
 }
 
-# Wait for pods to be ready
 wait_for_pods() {
     local namespace="$1"
     local selector="$2"
@@ -57,7 +53,6 @@ wait_for_pods() {
     fi
 }
 
-# Check namespace exists
 check_namespace() {
     local namespace="$1"
     
@@ -70,7 +65,6 @@ check_namespace() {
     fi
 }
 
-# Get pod logs
 get_pod_logs() {
     local namespace="$1"
     local pod="$2"
@@ -80,7 +74,6 @@ get_pod_logs() {
     kubectl logs -n "${namespace}" "${pod}" --tail="${lines}"
 }
 
-# Port forward helper
 port_forward() {
     local namespace="$1"
     local service="$2"
@@ -91,12 +84,11 @@ port_forward() {
     kubectl port-forward -n "${namespace}" "service/${service}" "${local_port}:${service_port}"
 }
 
-# Main function for script usage
 main() {
     case "${1:-help}" in
         "status")
             check_kubectl
-            check_cluster
+            check_cluster_connectivity
             get_cluster_status
             ;;
         "wait-pods")

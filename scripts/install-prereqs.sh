@@ -5,7 +5,6 @@ set -euo pipefail
 here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${here}/common.sh"
 
-# Check if command exists
 command_exists() {
     if command -v "$1" >/dev/null 2>&1; then
         echo 0
@@ -14,7 +13,6 @@ command_exists() {
     fi
 }
 
-# Install k3d
 install_k3d() {
     local k3d_exists
     k3d_exists=$(command_exists k3d)
@@ -27,7 +25,6 @@ install_k3d() {
     fi
 }
 
-# Install kubectl
 install_kubectl() {
     local kubectl_exists
     kubectl_exists=$(command_exists kubectl)
@@ -43,7 +40,6 @@ install_kubectl() {
     fi
 }
 
-# Install Helm
 install_helm() {
     local helm_exists
     helm_exists=$(command_exists helm)
@@ -56,7 +52,6 @@ install_helm() {
     fi
 }
 
-# Install Helmfile
 install_helmfile() {
     local helmfile_exists
     helmfile_exists=$(command_exists helmfile)
@@ -74,7 +69,6 @@ install_helmfile() {
     fi
 }
 
-# Install DevSpace
 install_devspace() {
     if ! command -v devspace >/dev/null 2>&1; then
         log_info "Installing DevSpace..."
@@ -89,7 +83,6 @@ install_devspace() {
     fi
 }
 
-# Check Docker daemon
 check_docker_daemon() {
     if ! docker info >/dev/null 2>&1; then
         log_warning "Docker daemon is not running. Please install or start Docker and try again."
@@ -98,7 +91,6 @@ check_docker_daemon() {
     return 0
 }
 
-# Main installation function
 main() {
     log_step "Checking and installing prerequisites for Grounds Development Infrastructure..."
     

@@ -9,13 +9,11 @@ source "${here}/common.sh"
 spinner_chars=("⠋" "⠙" "⠹" "⠸" "⠼" "⠴" "⠦" "⠧" "⠇" "⠏")
 spinner_index=0
 
-# Spinner function
 show_spinner() {
     printf "\r%s %s" "${spinner_chars[${spinner_index}]}" "$1"
     spinner_index=$(( (spinner_index + 1) % ${#spinner_chars[@]} ))
 }
 
-# Wait for CRD function
 wait_for_crd() {
     local crd="$1"
     local timeout="${2:-60}"
@@ -38,7 +36,6 @@ wait_for_crd() {
     return 1
 }
 
-# Main execution
 main() {
     log_info "Starting CRD readiness check..."
     

@@ -1,7 +1,3 @@
-# Grounds Development Infrastructure (grounds-dev) Makefile
-# Automation for local Kubernetes development environment
-# Provides one-command setup and management of k3d cluster with PostgreSQL, Agones, and Open Match
-
 SHELL := /usr/bin/env bash
 
 # Colors for fancy output
@@ -109,10 +105,3 @@ test: ## Test the deployment
 	@echo -e "$(BLUE)ℹ️  Testing dummy HTTP server...$(NC)"
 	@curl -s http://localhost/demo || echo -e "$(YELLOW)⚠️  Dummy server not accessible (may still be starting)$(NC)"
 	@echo -e "$(GREEN)✅ Tests completed$(NC)"
-
-.PHONY: export-kubeconfig
-export-kubeconfig: ## Export k3d cluster kubeconfig to ./kubeconfig
-	@echo -e "$(BLUE)ℹ️  Exporting kubeconfig...$(NC)"
-	@k3d kubeconfig get dev > kubeconfig
-	@echo -e "$(GREEN)✅ Kubeconfig exported to ./kubeconfig$(NC)"
-	@echo -e "$(CYAN)Use it with: export KUBECONFIG=\$$(pwd)/kubeconfig$(NC)"

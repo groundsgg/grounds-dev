@@ -4,7 +4,6 @@ set -euo pipefail
 
 # Get script directory
 here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-
 source "${here}/../scripts/common.sh"
 
 log_step "Starting Grounds Development Infrastructure cluster bootstrap..."
@@ -55,14 +54,14 @@ log_info "Setting kubectl context to k3d-dev..."
 kubectl config use-context k3d-dev
 log_success "kubectl context set to k3d-dev"
 
-# Export kubeconfig to project root
-log_info "Exporting kubeconfig to ./kubeconfig..."
-k3d kubeconfig get dev > "${here}/../kubeconfig"
-log_success "Kubeconfig exported to ./kubeconfig"
-
 # Install kubeconfig for kubectx if available
 if command -v kubectx >/dev/null 2>&1; then
     log_info "kubectx detected, installing kubeconfig to ~/.kube/config..."
+
+    # Export kubeconfig to project root
+    log_info "Exporting kubeconfig to ./kubeconfig..."
+    k3d kubeconfig get dev > "${here}/../kubeconfig"
+    log_success "Kubeconfig exported to ./kubeconfig"
     
     # Ensure ~/.kube directory exists
     mkdir -p "${HOME}/.kube"
@@ -192,4 +191,3 @@ log_info "Next steps:"
 log_info "• Run 'make up' to deploy the full stack"
 log_info "• Run 'make status' to check deployment status"
 log_info "• Access services at 'http://localhost'"
-log_info "• Use kubeconfig: 'export KUBECONFIG=\$(pwd)/kubeconfig'"
