@@ -25,20 +25,20 @@ if k3d cluster list | grep -q "^dev "; then
     retry_count=0
     cluster_healthy=false
     
-    while [ $retry_count -lt $max_retries ]; do
+    while [[ "${retry_count}" -lt "${max_retries}" ]]; do
         if kubectl cluster-info >/dev/null 2>&1 && kubectl get nodes >/dev/null 2>&1; then
             cluster_healthy=true
             break
         fi
         retry_count=$((retry_count + 1))
-        log_warning "Cluster health check failed (attempt $retry_count/$max_retries), retrying in 5 seconds..."
+        log_warning "Cluster health check failed (attempt ${retry_count}/${max_retries}), retrying in 5 seconds..."
         sleep 5
     done
     
-    if [ "$cluster_healthy" = true ]; then
+    if [[ "${cluster_healthy}" = true ]]; then
         log_success "Cluster 'dev' is healthy, skipping creation"
     else
-        log_warning "Cluster 'dev' exists but is unhealthy after $max_retries attempts, recreating..."
+        log_warning "Cluster 'dev' exists but is unhealthy after ${max_retries} attempts, recreating..."
         k3d cluster delete dev
         log_step "Creating k3d cluster 'dev'..."
         k3d cluster create --config "${here}/k3d.yaml"
@@ -65,15 +65,15 @@ if command -v kubectx >/dev/null 2>&1; then
     log_info "kubectx detected, installing kubeconfig to ~/.kube/config..."
     
     # Ensure ~/.kube directory exists
-    mkdir -p "$HOME/.kube"
+    mkdir -p "${HOME}/.kube"
     
     # Merge kubeconfigs using kubectl's native merge capability
-    if [ -f "$HOME/.kube/config" ]; then
-        KUBECONFIG="$HOME/.kube/config:${here}/../kubeconfig" kubectl config view --flatten > /tmp/merged-config
-        mv /tmp/merged-config "$HOME/.kube/config"
+    if [[ -f "${HOME}/.kube/config" ]]; then
+        KUBECONFIG="${HOME}/.kube/config:${here}/../kubeconfig" kubectl config view --flatten > /tmp/merged-config
+        mv /tmp/merged-config "${HOME}/.kube/config"
         log_success "k3d-dev context merged into ~/.kube/config"
     else
-        cp "${here}/../kubeconfig" "$HOME/.kube/config"
+        cp "${here}/../kubeconfig" "${HOME}/.kube/config"
         log_success "kubeconfig installed to ~/.kube/config"
     fi
     
@@ -92,7 +92,7 @@ log_success "Namespaces created: infra, databases, games, api"
 
 # Load .env file if it exists
 env_file="${here}/../.env"
-if [ -f "${env_file}" ]; then
+if [[ -f "${env_file}" ]]; then
     log_info "Loading environment variables from .env file..."
     set -a
     # shellcheck source=/dev/null
@@ -104,7 +104,7 @@ else
 fi
 
 # Create GHCR pull secret if credentials are provided
-if [ -n "${GHCR_USERNAME:-}" ] && [ -n "${GHCR_TOKEN:-}" ]; then
+if [[ -n "${GHCR_USERNAME:-}" && -n "${GHCR_TOKEN:-}" ]]; then
     log_step "Creating GHCR pull secret..."
     
     # Create secret in default namespace
@@ -169,21 +169,21 @@ max_retries=5
 retry_count=0
 cluster_ready=false
 
-while [ $retry_count -lt $max_retries ]; do
+while [[ "${retry_count}" -lt "${max_retries}" ]]; do
     if kubectl get nodes >/dev/null 2>&1; then
         cluster_ready=true
         break
     fi
     retry_count=$((retry_count + 1))
-    log_warning "Cluster readiness check failed (attempt $retry_count/$max_retries), retrying in 10 seconds..."
+    log_warning "Cluster readiness check failed (attempt ${retry_count}/${max_retries}), retrying in 10 seconds..."
     sleep 10
 done
 
-if [ "$cluster_ready" = true ]; then
+if [[ "${cluster_ready}" = true ]]; then
     kubectl get nodes
     log_success "Cluster is ready!"
 else
-    log_error "Cluster failed to become ready after $max_retries attempts"
+    log_error "Cluster failed to become ready after ${max_retries} attempts"
     exit 1
 fi
 
