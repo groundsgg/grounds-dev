@@ -54,33 +54,6 @@ log_info "Setting kubectl context to k3d-dev..."
 kubectl config use-context k3d-dev
 log_success "kubectl context set to k3d-dev"
 
-# Install kubeconfig for kubectx if available
-if command -v kubectx >/dev/null 2>&1; then
-    log_info "kubectx detected, installing kubeconfig to ~/.kube/config..."
-
-    # Export kubeconfig to project root
-    log_info "Exporting kubeconfig to ./kubeconfig..."
-    k3d kubeconfig get dev > "${here}/../kubeconfig"
-    log_success "Kubeconfig exported to ./kubeconfig"
-    
-    # Ensure ~/.kube directory exists
-    mkdir -p "${HOME}/.kube"
-    
-    # Merge kubeconfigs using kubectl's native merge capability
-    if [[ -f "${HOME}/.kube/config" ]]; then
-        KUBECONFIG="${HOME}/.kube/config:${here}/../kubeconfig" kubectl config view --flatten > /tmp/merged-config
-        mv /tmp/merged-config "${HOME}/.kube/config"
-        log_success "k3d-dev context merged into ~/.kube/config"
-    else
-        cp "${here}/../kubeconfig" "${HOME}/.kube/config"
-        log_success "kubeconfig installed to ~/.kube/config"
-    fi
-    
-    log_info "You can now use: kubectx k3d-dev"
-else
-    log_info "kubectx not found, skipping kubeconfig installation to ~/.kube/"
-fi
-
 # Create namespaces
 log_info "Creating namespaces..."
 for ns in infra databases games api; do
