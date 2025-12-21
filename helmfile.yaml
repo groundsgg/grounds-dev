@@ -28,6 +28,14 @@ releases:
     # Wait for Agones controller to be ready
     wait: true
     timeout: 600
-    # Install CRDs automatically
-    createNamespace: true
+
+  # Valkey
+  - name: valkey
+    namespace: databases
+    chart: bitnami/valkey
+    values:
+      - values/valkey.values.yaml
+    # Wait for Valkey to be ready before proceeding
+    wait: true
+    timeout: 300
 

@@ -1,6 +1,6 @@
 # Grounds Development Infrastructure (grounds-dev) 🚀
 
-A local development infrastructure that provisions a k3d Kubernetes cluster with PostgreSQL and Agones (game server hosting).
+A local development infrastructure that provisions a k3d Kubernetes cluster with all necessary components to run the Grounds network.
 
 ## 🎯 Quick Start
 
@@ -15,6 +15,7 @@ The `make up` command will automatically install missing prerequisites and deplo
 - **k3d Kubernetes cluster** (1 server + 2 agents)
 - **PostgreSQL database** in `databases` namespace
 - **Agones** for game server hosting in `games` namespace
+- **Valkey** in `databases` namespace
 - **Dummy HTTP server** for testing in `infra` namespace
 - **API namespace** for API services and microservices
 
@@ -71,10 +72,10 @@ This enables pulling private GHCR images without specifying `imagePullSecrets` i
 |---------|-------------|
 | `make up` | Start complete development environment |
 | `make down` | Stop and delete the cluster |
+| `make reset` | Reset the cluster (down + up) |
 | `make status` | Show cluster and deployment status |
 | `make logs` | Show logs for all services |
 | `make test` | Test the deployment |
-| `make export-kubeconfig` | Export cluster kubeconfig to ./kubeconfig |
 | `make help` | Show all available commands |
 
 ### Development Helpers
@@ -82,21 +83,6 @@ This enables pulling private GHCR images without specifying `imagePullSecrets` i
 | Command | Description |
 |---------|-------------|
 | `make port-forward` | Port forward services to localhost |
-| `make db-connect` | Connect to PostgreSQL database |
-| `make shell` | Open shell in PostgreSQL pod |
-
-### Kubeconfig Access
-
-The cluster kubeconfig is automatically exported to `./kubeconfig` during setup.
-
-```bash
-# Use the local kubeconfig
-export KUBECONFIG=$(pwd)/kubeconfig
-kubectl get nodes
-
-# Or manually re-export
-make export-kubeconfig
-```
 
 ## 🌐 Service Access
 
@@ -107,9 +93,6 @@ make export-kubeconfig
 - **Port**: `5432`
 
 ```bash
-# Connect to database
-make db-connect
-
 # Port forward to access locally
 kubectl port-forward -n databases svc/postgresql 5432:5432
 ```
@@ -122,20 +105,6 @@ kubectl port-forward -n databases svc/postgresql 5432:5432
 # Check Agones status
 kubectl get fleets -n games
 kubectl get gameservers -n games
-```
-
-
-### API Services
-- **Namespace**: `api`
-- **Purpose**: Host API services and microservices
-
-```bash
-# Deploy API services to the api namespace
-kubectl apply -f manifests/ -n api
-
-# Check API services
-kubectl get pods -n api
-kubectl get services -n api
 ```
 
 ### Dummy HTTP Server (Testing)
@@ -157,7 +126,7 @@ kubectl get pods -A
 make logs
 
 # Restart everything
-make down && make up
+make reset
 ```
 
 ## 🔒 Security Note
