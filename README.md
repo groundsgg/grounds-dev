@@ -66,6 +66,27 @@ The bootstrap script automatically:
 
 This enables pulling private GHCR images without specifying `imagePullSecrets` in your Pod specs.
 
+### GitHub Packages (Maven) Authentication
+
+The GitHub token is also required for the self hosted Maven artifacts. Set these properties in `~/.gradle/gradle.properties`:
+
+```properties
+github.user=your-github-username
+github.token=your-github-personal-access-token
+```
+
+The Maven repository configuration expects those properties:
+
+```gradle
+maven {
+    url = uri("https://maven.pkg.github.com/groundsgg/<repository-name>")
+    credentials {
+        username = providers.gradleProperty("github.user").get()
+        password = providers.gradleProperty("github.token").get()
+    }
+}
+```
+
 ## 🛠️ Essential Commands
 
 | Command | Description |
