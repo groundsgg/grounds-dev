@@ -20,7 +20,7 @@ releases:
 
   # Agones game server hosting platform
   - name: agones
-    namespace: games
+    namespace: agones
     chart: agones/agones
     # Use latest stable version (no version pinning for Agones)
     values:

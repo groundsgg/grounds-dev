@@ -34,8 +34,10 @@ up: install-prereqs ## Start the complete development environment
 	@./cluster/bootstrap.sh
 	@echo -e "$(BLUE)ℹ️  Deploying Helm releases...$(NC)"
 	@helmfile sync
-	@echo -e "$(BLUE)ℹ️  Deploying dummy HTTP server...$(NC)"
-	@kubectl apply -f manifests/dummy-http-server.yaml
+	@echo -e "$(BLUE)ℹ️  Creating Velocity forwarding secret...$(NC)"
+	@./scripts/create-velocity-secret.sh
+	@echo -e "$(BLUE)ℹ️  Deploying manifests...$(NC)"
+	@kubectl apply -f manifests
 	@echo -e "$(BLUE)ℹ️  Waiting for Agones CRDs...$(NC)"
 	@./scripts/wait-for-crds.sh
 	@echo -e "$(GREEN)✅ Grounds Development Infrastructure environment is ready!$(NC)"
