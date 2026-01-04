@@ -56,12 +56,11 @@ log_success "kubectl context set to k3d-dev"
 
 # Create namespaces
 log_info "Creating namespaces..."
-for ns in infra databases games api; do
+for ns in infra databases games api agones; do
     log_info "Creating namespace: ${ns}"
     kubectl create namespace "${ns}" --dry-run=client -o yaml | kubectl apply -f -
 done
-log_success "Namespaces created: infra, databases, games, api"
-
+log_success "Namespaces created: infra, databases, games, api, agones"
 # Load .env file if it exists
 env_file="${here}/../.env"
 if [[ -f "${env_file}" ]]; then
@@ -107,7 +106,7 @@ if [[ -n "${GHCR_USERNAME:-}" && -n "${GHCR_TOKEN:-}" ]]; then
     }
     
     # Create secret and patch service accounts in all namespaces
-    for ns in infra databases games api; do
+    for ns in infra databases games api agones; do
         log_info "Creating ghcr-pull-secret in namespace: ${ns}"
         kubectl create secret docker-registry ghcr-pull-secret \
             --docker-server=ghcr.io \
