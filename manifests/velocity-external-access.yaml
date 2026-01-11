@@ -1,0 +1,53 @@
+---
+# Adds a dedicated TCP entrypoint (25565) to Traefik so we can route Minecraft/Velocity traffic.
+apiVersion: helm.cattle.io/v1
+kind: HelmChartConfig
+metadata:
+  name: traefik
+  namespace: kube-system
+spec:
+  valuesContent: |-
+    ports:
+      minecraft:
+        port: 25565
+        exposedPort: 25565
+        protocol: TCP
+        expose:
+          default: true
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: velocity
+  namespace: games
+  labels:
+    app: velocity
+spec:
+  type: ClusterIP
+  sessionAffinity: ClientIP
+  ports:
+    - name: velocity
+      port: 25565
+      targetPort: 25565
+      protocol: TCP
+  selector:
+    grounds/server-type: velocity
+    agones.dev/role: gameserver
+
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRouteTCP
+metadata:
+  name: velocity
+  namespace: games
+  labels:
+    app: velocity
+spec:
+  entryPoints:
+    - minecraft
+  routes:
+    - match: HostSNI(`*`)
+      services:
+        - name: velocity
+          port: 25565
