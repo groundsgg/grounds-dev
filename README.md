@@ -153,3 +153,7 @@ make reset
 ## 🔒 Security Note
 
 ⚠️ **Development only!** Default credentials (app/app) are used. Not for production.
+
+## License
+
+Licensed under the Apache License, Version 2.0.
