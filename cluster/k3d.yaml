@@ -7,7 +7,7 @@ metadata:
 servers: 1
 agents: 2
 
-image: rancher/k3s:v1.34.1-k3s1
+image: rancher/k3s:v1.35.0-k3s1
 
 # Port mappings for ingress traffic
 ports:
