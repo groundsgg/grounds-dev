@@ -105,38 +105,6 @@ maven {
 |---------|-------------|
 | `make port-forward` | Port forward services to localhost |
 
-## 🌐 Service Access
-
-### PostgreSQL Database
-- **Namespace**: `databases`
-- **Credentials**: `app/app`
-- **Database**: `app`
-- **Port**: `5432`
-
-```bash
-# Port forward to access locally
-kubectl port-forward -n databases svc/postgresql 5432:5432
-```
-
-### Agones Game Server Platform
-- **Namespace**: `games`
-- **CRDs**: `fleets.agones.dev`, `gameservers.agones.dev`
-
-```bash
-# Check Agones status
-kubectl get fleets -n games
-kubectl get gameservers -n games
-```
-
-### Dummy HTTP Server (Testing)
-- **URL**: http://localhost/demo
-- **Namespace**: `infra`
-
-```bash
-# Test the server
-curl http://localhost/demo
-```
-
 ## 🐛 Quick Troubleshooting
 
 ```bash

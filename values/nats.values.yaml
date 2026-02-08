@@ -1,0 +1,45 @@
+# NATS configuration for local development
+# Minimal single-node setup with JetStream persistence
+
+config:
+  cluster:
+    enabled: false
+
+  jetstream:
+    enabled: true
+    fileStore:
+      pvc:
+        enabled: true
+        size: 1Gi
+        storageClassName: local-path
+
+# Single replica for local development
+container:
+  image:
+    pullPolicy: IfNotPresent
+  env:
+    # Disable advertise to avoid issues in k3d
+    NATS_NO_ADVERTISE: "true"
+
+# Resource limits for local development
+resources:
+  requests:
+    cpu: 50m
+    memory: 64Mi
+  limits:
+    cpu: 250m
+    memory: 256Mi
+
+# Single NATS server replica
+replicaCount: 1
+
+# Disable NATS monitoring for local development
+promExporter:
+  enabled: false
+
+# Service configuration
+service:
+  enabled: true
+  ports:
+    nats:
+      enabled: true

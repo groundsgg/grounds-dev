@@ -4,6 +4,8 @@ repositories:
     url: https://charts.bitnami.com/bitnami
   - name: agones
     url: https://agones.dev/chart/stable
+  - name: nats
+    url: https://nats-io.github.io/k8s/helm/charts
 
 # Helm releases in deployment order
 releases:
@@ -36,6 +38,16 @@ releases:
     values:
       - values/valkey.values.yaml
     # Wait for Valkey to be ready before proceeding
+    wait: true
+    timeout: 300
+
+  # NATS messaging system
+  - name: nats
+    namespace: infra
+    chart: nats/nats
+    values:
+      - values/nats.values.yaml
+    # Wait for NATS to be ready before proceeding
     wait: true
     timeout: 300
 
