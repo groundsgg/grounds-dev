@@ -90,7 +90,7 @@ main() {
     
     # Create catalog source
     log_info "Creating OperatorHub catalog source if needed..."
-    if kubectl apply -f "${project_root}/manifests/keycloak-operator-catalog.yaml" 2>/dev/null; then
+    if kubectl apply -f "${project_root}/manifests/keycloak/keycloak-operator-catalog.yaml" 2>/dev/null; then
         log_success "Catalog source created or already exists"
     else
         log_warning "Catalog source may already exist or OLM not fully ready"
@@ -98,7 +98,7 @@ main() {
     
     # Create operator group (required before subscription)
     log_info "Creating Keycloak operator group..."
-    if kubectl apply -f "${project_root}/manifests/keycloak-operatorgroup.yaml"; then
+    if kubectl apply -f "${project_root}/manifests/keycloak/keycloak-operatorgroup.yaml"; then
         log_success "Operator group created"
     else
         log_error "Failed to create operator group"
@@ -107,7 +107,7 @@ main() {
     
     # Install operator subscription
     log_info "Installing Keycloak operator subscription..."
-    kubectl apply -f "${project_root}/manifests/keycloak-operator-subscription.yaml"
+    kubectl apply -f "${project_root}/manifests/keycloak/keycloak-operator-subscription.yaml"
     log_success "Keycloak operator subscription created"
     
     # Wait for operator to be ready
@@ -134,12 +134,12 @@ main() {
     
     # Create database secret
     log_info "Creating Keycloak database secret..."
-    kubectl apply -f "${project_root}/manifests/keycloak-db-secret.yaml"
+    kubectl apply -f "${project_root}/manifests/keycloak/keycloak-db-secret.yaml"
     log_success "Database secret created"
     
     # Deploy Traefik middleware for X-Forwarded-* headers (required before Keycloak ingress)
     log_info "Deploying Traefik middleware for X-Forwarded-* headers..."
-    if kubectl apply -f "${project_root}/manifests/traefik-keycloak-headers-middleware.yaml" 2>/dev/null; then
+    if kubectl apply -f "${project_root}/manifests/keycloak/traefik-keycloak-headers-middleware.yaml" 2>/dev/null; then
         log_success "Traefik middleware created"
     else
         log_warning "Traefik middleware may already exist or CRD not ready"
@@ -147,7 +147,7 @@ main() {
 
     # Deploy Traefik ServersTransport for insecure backend connections
     log_info "Deploying Traefik ServersTransport..."
-    if kubectl apply -f "${project_root}/manifests/traefik-keycloak-servers-transport.yaml" 2>/dev/null; then
+    if kubectl apply -f "${project_root}/manifests/keycloak/traefik-keycloak-servers-transport.yaml" 2>/dev/null; then
         log_success "Traefik ServersTransport created"
     else
         log_warning "Traefik ServersTransport may already exist or CRD not ready"
@@ -155,7 +155,7 @@ main() {
 
     # Deploy Keycloak instance
     log_info "Deploying Keycloak instance..."
-    kubectl apply -f "${project_root}/manifests/keycloak.yaml"
+    kubectl apply -f "${project_root}/manifests/keycloak/keycloak.yaml"
     log_success "Keycloak instance deployment initiated"
 
     # Wait for Keycloak service to be available
@@ -181,7 +181,7 @@ main() {
 
     # Deploy Traefik IngressRoute (custom ingress configuration)
     log_info "Deploying Traefik IngressRoute for Keycloak..."
-    if kubectl apply -f "${project_root}/manifests/traefik-keycloak-ingressroute.yaml" 2>/dev/null; then
+    if kubectl apply -f "${project_root}/manifests/keycloak/traefik-keycloak-ingressroute.yaml" 2>/dev/null; then
         log_success "Traefik IngressRoute created"
     else
         log_warning "Traefik IngressRoute may already exist or CRD not ready"
