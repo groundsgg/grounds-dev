@@ -124,6 +124,10 @@ else
     log_info "To enable GHCR authentication, set GHCR_USERNAME and GHCR_TOKEN in your .env file"
 fi
 
+# Setup local TLS certificates
+log_step "Setting up local TLS certificates..."
+"${here}/../scripts/setup-certs.sh"
+
 # Verify cluster is ready with retry
 log_info "Verifying cluster readiness..."
 max_retries=5
@@ -152,4 +156,4 @@ log_step "Bootstrap completed successfully! 🎉"
 log_info "Next steps:"
 log_info "• Run 'make up' to deploy the full stack"
 log_info "• Run 'make status' to check deployment status"
-log_info "• Access services at 'http://localhost'"
+log_info "• Access services at https://demo.127.0.0.1.sslip.io"

@@ -42,7 +42,8 @@ up: install-prereqs ## Start the complete development environment
 	@./scripts/wait-for-crds.sh
 	@echo -e "$(GREEN)✅ Grounds Development Infrastructure environment is ready!$(NC)"
 	@echo -e "$(CYAN)📊 Run 'make status' to check deployment status$(NC)"
-	@echo -e "$(CYAN)🌐 Access dummy server at: http://localhost/demo$(NC)"
+	@echo -e "$(CYAN)🌐 Access dummy server at: https://demo.127.0.0.1.sslip.io$(NC)"
+	@echo -e "$(CYAN)🔐 Run 'make trust-ca' to trust the CA in your Windows browser$(NC)"
 
 .PHONY: down
 down: ## Stop and delete the development environment
@@ -85,6 +86,14 @@ port-forward: ## Port forward services to localhost
 	@echo -e "$(WHITE)kubectl port-forward -n databases svc/postgresql 5432:5432$(NC)"
 	@echo -e "$(WHITE)kubectl port-forward -n infra svc/dummy-http-server 8080:80$(NC)"
 
+.PHONY: certs
+certs: ## Generate local TLS certificates with mkcert
+	@./scripts/setup-certs.sh
+
+.PHONY: trust-ca
+trust-ca: ## Install mkcert CA in Windows certificate store (WSL2)
+	@./scripts/trust-ca-windows.sh
+
 .PHONY: clean
 clean: ## Clean up all resources
 	@echo -e "$(YELLOW)⚠️  Cleaning up all resources...$(NC)"
@@ -105,5 +114,5 @@ test: ## Test the deployment
 	@echo -e "$(BLUE)ℹ️  Testing cluster connectivity...$(NC)"
 	@kubectl cluster-info
 	@echo -e "$(BLUE)ℹ️  Testing dummy HTTP server...$(NC)"
-	@curl -s http://localhost/demo || echo -e "$(YELLOW)⚠️  Dummy server not accessible (may still be starting)$(NC)"
+	@curl -sk https://demo.127.0.0.1.sslip.io || echo -e "$(YELLOW)⚠️  Dummy server not accessible (may still be starting)$(NC)"
 	@echo -e "$(GREEN)✅ Tests completed$(NC)"

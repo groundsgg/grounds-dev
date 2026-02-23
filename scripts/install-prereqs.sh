@@ -83,6 +83,23 @@ install_devspace() {
     fi
 }
 
+install_mkcert() {
+    local mkcert_exists
+    mkcert_exists=$(command_exists mkcert)
+    if [[ "${mkcert_exists}" -ne 0 ]]; then
+        log_info "Installing mkcert..."
+        local mkcert_version="v1.4.4"
+        local temp_file
+        temp_file=$(mktemp)
+        curl -L "https://dl.filippo.io/mkcert/latest?for=linux/amd64" -o "${temp_file}"
+        chmod +x "${temp_file}"
+        sudo mv "${temp_file}" /usr/local/bin/mkcert
+        log_success "mkcert installed"
+    else
+        log_success "mkcert already installed"
+    fi
+}
+
 check_docker_daemon() {
     if ! docker info >/dev/null 2>&1; then
         log_warning "Docker daemon is not running. Please install or start Docker and try again."
@@ -100,6 +117,7 @@ main() {
     install_helm
     install_helmfile
     install_devspace
+    install_mkcert
     
     # Check Docker daemon
     local daemon_running

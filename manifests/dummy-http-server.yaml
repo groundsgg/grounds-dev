@@ -1,6 +1,6 @@
 # Dummy HTTP Server for Proof of Concept
 # Simple nginx deployment to test ingress routing and cluster functionality
-# Accessible at http://localhost/demo
+# Accessible at https://demo.127.0.0.1.sslip.io
 
 apiVersion: apps/v1
 kind: Deployment
@@ -119,11 +119,15 @@ metadata:
   labels:
     app: dummy-http-server
 spec:
+  tls:
+    - hosts:
+        - demo.127.0.0.1.sslip.io
+      secretName: grounds-local-tls
   rules:
-    - host: localhost
+    - host: demo.127.0.0.1.sslip.io
       http:
         paths:
-          - path: /demo
+          - path: /
             pathType: Prefix
             backend:
               service:
