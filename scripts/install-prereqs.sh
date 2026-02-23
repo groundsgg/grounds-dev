@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -euo pipefail
+# set -euo pipefail
 
 here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${here}/common.sh"

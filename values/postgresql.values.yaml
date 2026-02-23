@@ -15,6 +15,11 @@ global:
 
 # Primary PostgreSQL instance configuration
 primary:
+  initdb:
+    scripts:
+      01-multi-dbs.sql: |
+        CREATE DATABASE keycloak;
+        GRANT ALL PRIVILEGES ON DATABASE keycloak TO app;
   # Enable persistent storage for data persistence
   persistence:
     enabled: true

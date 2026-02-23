@@ -1,0 +1,16 @@
+# Keycloak Operator Subscription
+# Installs the Keycloak Operator via OLM (Operator Lifecycle Manager)
+# The operator will be installed in the keycloak namespace and can manage Keycloak instances cluster-wide
+
+apiVersion: operators.coreos.com/v1alpha1
+kind: Subscription
+metadata:
+  name: keycloak-operator
+  namespace: keycloak
+spec:
+  channel: fast
+  name: keycloak-operator
+  source: operatorhubio-catalog
+  sourceNamespace: olm
+  installPlanApproval: Automatic
+

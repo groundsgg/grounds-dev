@@ -40,6 +40,8 @@ up: install-prereqs ## Start the complete development environment
 	@kubectl apply -f manifests
 	@echo -e "$(BLUE)ℹ️  Waiting for Agones CRDs...$(NC)"
 	@./scripts/wait-for-crds.sh
+	@echo -e "$(BLUE)ℹ️  Deploying Keycloak...$(NC)"
+	@$(MAKE) deploy-keycloak
 	@echo -e "$(GREEN)✅ Grounds Development Infrastructure environment is ready!$(NC)"
 	@echo -e "$(CYAN)📊 Run 'make status' to check deployment status$(NC)"
 	@echo -e "$(CYAN)🌐 Access dummy server at: https://demo.127.0.0.1.sslip.io$(NC)"
@@ -76,6 +78,8 @@ logs: ## Show logs for all services
 	@kubectl logs -n games -l app.kubernetes.io/name=agones --tail=20 || true
 	@echo -e "\n$(CYAN)Dummy HTTP Server logs:$(NC)"
 	@kubectl logs -n infra -l app=dummy-http-server --tail=20 || true
+	@echo -e "\n$(CYAN)Keycloak logs:$(NC)"
+	@kubectl logs -n keycloak -l app=keycloak --tail=20 || true
 
 .PHONY: port-forward
 port-forward: ## Port forward services to localhost
@@ -93,6 +97,10 @@ certs: ## Generate local TLS certificates with mkcert
 .PHONY: trust-ca
 trust-ca: ## Install mkcert CA in Windows certificate store (WSL2)
 	@./scripts/trust-ca-windows.sh
+
+.PHONY: deploy-keycloak
+deploy-keycloak: ## Deploy Keycloak operator and instance
+	@./scripts/deploy-keycloak.sh
 
 .PHONY: clean
 clean: ## Clean up all resources

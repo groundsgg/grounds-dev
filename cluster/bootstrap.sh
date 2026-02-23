@@ -18,12 +18,12 @@ log_success "All prerequisites found"
 # Check if cluster already exists
 if k3d cluster list | grep -q "^dev "; then
     log_warning "Cluster 'dev' already exists, checking health..."
-    
+
     # Check if cluster is healthy with retry
     max_retries=3
     retry_count=0
     cluster_healthy=false
-    
+
     while [[ "${retry_count}" -lt "${max_retries}" ]]; do
         if kubectl cluster-info >/dev/null 2>&1 && kubectl get nodes >/dev/null 2>&1; then
             cluster_healthy=true
@@ -33,7 +33,7 @@ if k3d cluster list | grep -q "^dev "; then
         log_warning "Cluster health check failed (attempt ${retry_count}/${max_retries}), retrying in 5 seconds..."
         sleep 5
     done
-    
+
     if [[ "${cluster_healthy}" = true ]]; then
         log_success "Cluster 'dev' is healthy, skipping creation"
     else
@@ -54,13 +54,56 @@ log_info "Setting kubectl context to k3d-dev..."
 kubectl config use-context k3d-dev
 log_success "kubectl context set to k3d-dev"
 
+# Install OLM (Operator Lifecycle Manager)
+log_step "Installing OLM (Operator Lifecycle Manager) v0.35.0..."
+if kubectl get deployment olm-operator -n olm >/dev/null 2>&1; then
+    log_info "OLM is already installed, skipping installation"
+else
+    log_info "Downloading OLM installation script..."
+    install_script="/tmp/olm-install.sh"
+    curl -L https://github.com/operator-framework/operator-lifecycle-manager/releases/download/v0.35.0/install.sh -o "${install_script}"
+    chmod +x "${install_script}"
+
+    log_info "Installing OLM v0.35.0..."
+    "${install_script}" v0.35.0
+
+    # Wait for OLM to be ready
+    log_info "Waiting for OLM to be ready..."
+    max_retries=30
+    retry_count=0
+    olm_ready=false
+
+    while [[ "${retry_count}" -lt "${max_retries}" ]]; do
+        if kubectl get deployment olm-operator -n olm >/dev/null 2>&1 && \
+           kubectl get deployment catalog-operator -n olm >/dev/null 2>&1 && \
+           kubectl rollout status deployment/olm-operator -n olm --timeout=10s >/dev/null 2>&1 && \
+           kubectl rollout status deployment/catalog-operator -n olm --timeout=10s >/dev/null 2>&1; then
+            olm_ready=true
+            break
+        fi
+        retry_count=$((retry_count + 1))
+        log_info "Waiting for OLM deployments (attempt ${retry_count}/${max_retries})..."
+        sleep 10
+    done
+
+    if [[ "${olm_ready}" = true ]]; then
+        log_success "OLM installed and ready!"
+    else
+        log_warning "OLM installation may still be in progress, continuing..."
+    fi
+
+    # Clean up installation script
+    rm -f "${install_script}"
+fi
+
 # Create namespaces
 log_info "Creating namespaces..."
-for ns in infra databases games api agones; do
+for ns in infra databases games api agones keycloak; do
     log_info "Creating namespace: ${ns}"
     kubectl create namespace "${ns}" --dry-run=client -o yaml | kubectl apply -f -
 done
-log_success "Namespaces created: infra, databases, games, api, agones"
+log_success "Namespaces created: infra, databases, games, api, agones, keycloak"
+
 # Load .env file if it exists
 env_file="${here}/../.env"
 if [[ -f "${env_file}" ]]; then
@@ -77,7 +120,7 @@ fi
 # Create GHCR pull secret if credentials are provided
 if [[ -n "${GHCR_USERNAME:-}" && -n "${GHCR_TOKEN:-}" ]]; then
     log_step "Creating GHCR pull secret..."
-    
+
     # Function to patch service account with GHCR pull secret
     patch_service_account() {
         local namespace=$1
@@ -104,9 +147,9 @@ if [[ -n "${GHCR_USERNAME:-}" && -n "${GHCR_TOKEN:-}" ]]; then
             log_success "Default service account patched in namespace: ${namespace}"
         fi
     }
-    
+
     # Create secret and patch service accounts in all namespaces
-    for ns in infra databases games api agones; do
+    for ns in infra databases games api agones keycloak; do
         log_info "Creating ghcr-pull-secret in namespace: ${ns}"
         kubectl create secret docker-registry ghcr-pull-secret \
             --docker-server=ghcr.io \
@@ -114,10 +157,10 @@ if [[ -n "${GHCR_USERNAME:-}" && -n "${GHCR_TOKEN:-}" ]]; then
             --docker-password="${GHCR_TOKEN}" \
             --namespace="${ns}" \
             --dry-run=client -o yaml | kubectl apply -f -
-        
+
         patch_service_account "${ns}"
     done
-    
+
     log_success "GHCR pull secret configured globally across all namespaces"
 else
     log_warning "GHCR credentials not found (GHCR_USERNAME or GHCR_TOKEN missing), skipping GHCR pull secret creation"
@@ -152,7 +195,7 @@ else
     exit 1
 fi
 
-log_step "Bootstrap completed successfully! 🎉"
+log_step "Bootstrap completed successfully!"
 log_info "Next steps:"
 log_info "• Run 'make up' to deploy the full stack"
 log_info "• Run 'make status' to check deployment status"

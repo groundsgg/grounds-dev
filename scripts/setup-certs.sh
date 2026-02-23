@@ -39,7 +39,7 @@ setup_certs() {
 
     # Create TLS secret in all relevant namespaces
     log_info "Creating TLS secrets in Kubernetes namespaces..."
-    for ns in infra databases games api agones; do
+    for ns in infra databases games api agones keycloak; do
         kubectl create secret tls grounds-local-tls \
             --cert="${cert_file}" \
             --key="${key_file}" \

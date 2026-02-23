@@ -1,0 +1,16 @@
+# Traefik Middleware to ensure X-Forwarded-* headers are set correctly for Keycloak
+# This is required for TLS termination (edge mode) to work properly with Keycloak cookies
+# The middleware explicitly sets X-Forwarded-Proto to https and ensures headers are overwritten
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: keycloak-headers
+  namespace: keycloak
+spec:
+  headers:
+    customRequestHeaders:
+      X-Forwarded-Proto: "https"
+      X-Forwarded-Port: "443"
+    # Force overwrite existing headers to prevent header injection attacks
+    # This ensures Keycloak always receives the correct protocol information
+

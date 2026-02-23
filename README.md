@@ -1,8 +1,8 @@
-# Grounds Development Infrastructure (grounds-dev) 🚀
+# Grounds Development Infrastructure (grounds-dev)
 
 A local development infrastructure that provisions a k3d Kubernetes cluster with all necessary components to run the Grounds network.
 
-## 🎯 Quick Start
+## Quick Start
 
 ```bash
 # Clone and start everything
@@ -16,10 +16,12 @@ The `make up` command will automatically install missing prerequisites and deplo
 - **PostgreSQL database** in `databases` namespace
 - **Agones** for game server hosting in `games` namespace
 - **Valkey** in `databases` namespace
+- **NATS** in `infra` namespace
+- **Keycloak** in `keycloak` namespace
 - **Dummy HTTP server** for testing in `infra` namespace
 - **API namespace** for API services and microservices
 
-## 🔐 Authentication
+## Authentication
 
 ### Docker Hub Authentication
 
@@ -32,7 +34,7 @@ export DOCKER_PASSWORD="your-dockerhub-token"
 ```
 
 **Security Note**: Use a Docker Hub access token instead of your password:
-1. Go to Docker Hub → Account Settings → Security
+1. Go to Docker Hub -> Account Settings -> Security
 2. Create a new access token
 3. Use the token as `DOCKER_PASSWORD`
 
@@ -53,7 +55,7 @@ GHCR_TOKEN=your-github-personal-access-token
 ```
 
 **Creating a GitHub Personal Access Token (PAT)**:
-1. Go to GitHub → Settings → Developer settings → Personal access tokens → Tokens (classic)
+1. Go to GitHub -> Settings -> Developer settings -> Personal access tokens -> Tokens (classic)
 2. Click "Generate new token (classic)"
 3. Select the `read:packages` permission
 4. Generate and copy the token
@@ -87,7 +89,7 @@ maven {
 }
 ```
 
-## 🛠️ Essential Commands
+## Essential Commands
 
 | Command | Description |
 |---------|-------------|
@@ -104,8 +106,11 @@ maven {
 | Command | Description |
 |---------|-------------|
 | `make port-forward` | Port forward services to localhost |
+| `make certs` | Generate local TLS certificates with mkcert |
+| `make trust-ca` | Install mkcert CA in Windows certificate store (WSL2) |
+| `make deploy-keycloak` | Deploy Keycloak operator and instance |
 
-## 🐛 Quick Troubleshooting
+## Quick Troubleshooting
 
 ```bash
 # Check cluster status
@@ -118,9 +123,9 @@ make logs
 make reset
 ```
 
-## 🔒 Security Note
+## Security Note
 
-⚠️ **Development only!** Default credentials (app/app) are used. Not for production.
+**Development only!** Default credentials (app/app) are used. Not for production.
 
 ## License
 

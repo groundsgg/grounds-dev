@@ -1,0 +1,28 @@
+apiVersion: k8s.keycloak.org/v2alpha1
+kind: Keycloak
+metadata:
+  name: keycloak
+  namespace: keycloak
+spec:
+  instances: 1
+  db:
+    vendor: postgres
+    host: postgresql.databases.svc.cluster.local
+    database: keycloak
+    usernameSecret:
+      name: keycloak-db-secret
+      key: username
+    passwordSecret:
+      name: keycloak-db-secret
+      key: password
+  http:
+    tlsSecret: grounds-local-tls
+    httpEnabled: true
+  ingress:
+    enabled: false
+  hostname:
+    hostname: accounts.127.0.0.1.sslip.io
+    strict: false
+    strictBackchannel: false
+  proxy:
+    headers: xforwarded # Traefik forwards X-Forwarded-* headers
