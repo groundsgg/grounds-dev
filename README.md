@@ -2,6 +2,20 @@
 
 A local development infrastructure that provisions a k3d Kubernetes cluster with all necessary components to run the Grounds network.
 
+## Platform Support
+
+| Platform | Architecture | Status |
+|----------|-------------|--------|
+| Linux | x86_64 (amd64) | Supported |
+| Linux | aarch64 (arm64) | Supported |
+| macOS | Apple Silicon (arm64) | Supported |
+| macOS | Intel (amd64) | Supported |
+| WSL2 | x86_64 (amd64) | Supported |
+
+All scripts auto-detect the OS and CPU architecture. Prerequisites are downloaded for the correct platform automatically.
+
+**macOS requirements**: [Docker Desktop](https://www.docker.com/products/docker-desktop/) with Kubernetes resources allocated (recommended: 6 CPU, 8 GB RAM).
+
 ## Quick Start
 
 ```bash
@@ -20,6 +34,38 @@ The `make up` command will automatically install missing prerequisites and deplo
 - **Keycloak** in `keycloak` namespace
 - **Dummy HTTP server** for testing in `infra` namespace
 - **API namespace** for API services and microservices
+
+## Platform profile
+
+The default `make up` brings up the core game-server dev env (PostgreSQL,
+Agones, plugin deps). For platform-side work — building against
+grounds-forge, the internal portal, or the CLI — layer the platform
+profile on top:
+
+```
+make up-platform
+```
+
+This installs Zot, the vCluster operator, and `grounds-forge` (private
+chart from `ghcr.io/groundsgg/charts/grounds-forge`).
+
+**Prerequisites:**
+
+- Base `make up` has succeeded (k3d cluster + postgres + plugin deps).
+- Helm is logged into GHCR (the chart and image are private):
+  ```
+  echo $GHCR_PAT | helm registry login ghcr.io -u <github-user> --password-stdin
+  ```
+- The `grounds_forge` database exists in PostgreSQL (not created automatically):
+  ```
+  kubectl exec -n databases svc/postgresql -- \
+    psql -U app -d app -c "CREATE DATABASE grounds_forge;"
+  ```
+
+**Deferred:** Keycloak realm import (`manifests/platform/keycloak-platform-realm.json`).
+Add when you need to exercise `/v1/whoami`.
+
+Once up, reach grounds-forge at `http://platform.localhost`.
 
 ## Authentication
 
@@ -107,7 +153,7 @@ maven {
 |---------|-------------|
 | `make port-forward` | Port forward services to localhost |
 | `make certs` | Generate local TLS certificates with mkcert |
-| `make trust-ca` | Install mkcert CA in Windows certificate store (WSL2) |
+| `make trust-ca` | Install mkcert CA in Windows certificate store (WSL2 only) |
 | `make deploy-keycloak` | Deploy Keycloak operator and instance |
 
 ## Quick Troubleshooting

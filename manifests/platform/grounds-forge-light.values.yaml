@@ -1,0 +1,55 @@
+# Light-profile overrides for local grounds-dev k3d cluster.
+# See chart defaults at ghcr.io/groundsgg/charts/grounds-forge.
+#
+# NOTE: The grounds_forge database must exist in PostgreSQL before deploying.
+# The grounds-dev helmfile provisions only the `app`, `keycloak`, and `cockpit`
+# databases. Create it manually if needed:
+#   kubectl exec -n databases svc/postgresql -- \
+#     psql -U app -d app -c "CREATE DATABASE grounds_forge;"
+
+replicas: 1
+
+image:
+  repository: ghcr.io/groundsgg/grounds-forge
+  tag: "0.3.1"
+  pullPolicy: IfNotPresent
+
+ingress:
+  enabled: true
+  className: traefik   # k3d default
+  host: platform.localhost
+  tls:
+    enabled: false
+
+config:
+  keycloakIssuerUrl: http://keycloak.dev.svc.cluster.local:8080/realms/grounds
+  keycloakAudience: grounds-forge-api
+  logLevel: debug
+  nodeEnv: development
+  tempoEndpoint: ""
+
+externalSecret:
+  enabled: false
+
+imagePullSecret:
+  enabled: false
+
+env:
+  # Local postgres — lands inside k3d via grounds-dev's helmfile.
+  # Default credentials are app/app (see values/postgresql.values.yaml).
+  # The grounds_forge DB is NOT created automatically; see NOTE above.
+  DATABASE_URL: postgres://app:app@postgresql.databases.svc.cluster.local:5432/grounds_forge
+
+serviceMonitor:
+  enabled: false
+
+grafanaDashboard:
+  enabled: false
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 128Mi
+  limits:
+    cpu: 500m
+    memory: 256Mi

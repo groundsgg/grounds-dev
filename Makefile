@@ -32,20 +32,29 @@ up: install-prereqs ## Start the complete development environment
 	@echo -e "$(PURPLE)🚀 Starting Grounds Development Infrastructure environment...$(NC)"
 	@echo -e "$(BLUE)ℹ️  Creating k3d cluster and deploying services$(NC)"
 	@./cluster/bootstrap.sh
-	@echo -e "$(BLUE)ℹ️  Deploying Helm releases...$(NC)"
-	@helmfile sync
+	@echo -e "$(BLUE)ℹ️  Building source-based images...$(NC)"
+	@./scripts/build-images.sh
+	@echo -e "$(BLUE)ℹ️  Pushing local dev images to registry...$(NC)"
+	@./scripts/push-images.sh
 	@echo -e "$(BLUE)ℹ️  Creating Velocity forwarding secret...$(NC)"
 	@./scripts/create-velocity-secret.sh
-	@echo -e "$(BLUE)ℹ️  Deploying manifests...$(NC)"
-	@kubectl apply -f manifests
-	@echo -e "$(BLUE)ℹ️  Waiting for Agones CRDs...$(NC)"
-	@./scripts/wait-for-crds.sh
+	@echo -e "$(BLUE)ℹ️  Deploying base manifests...$(NC)"
+	@find manifests -maxdepth 1 -name '*.yaml' -exec kubectl apply -f {} \;
+	@echo -e "$(BLUE)ℹ️  Deploying Helm releases...$(NC)"
+	@helmfile sync
+	@echo -e "$(BLUE)ℹ️  Deploying monitoring manifests...$(NC)"
+	@kubectl apply -f manifests/monitoring/
 	@echo -e "$(BLUE)ℹ️  Deploying Keycloak...$(NC)"
 	@$(MAKE) deploy-keycloak
 	@echo -e "$(GREEN)✅ Grounds Development Infrastructure environment is ready!$(NC)"
 	@echo -e "$(CYAN)📊 Run 'make status' to check deployment status$(NC)"
-	@echo -e "$(CYAN)🌐 Access dummy server at: https://demo.127.0.0.1.sslip.io$(NC)"
-	@echo -e "$(CYAN)🔐 Run 'make trust-ca' to trust the CA in your Windows browser$(NC)"
+	@echo -e "$(CYAN)🎮 Minecraft: localhost:25565$(NC)"
+	@echo -e "$(CYAN)📈 Grafana: https://grafana.127.0.0.1.sslip.io$(NC)"
+	@echo -e "$(CYAN)🔐 Keycloak: https://accounts.127.0.0.1.sslip.io$(NC)"
+
+.PHONY: up-platform
+up-platform: up ## Layer the platform profile (zot + vcluster operator + grounds-forge) on top of the base dev env
+	@./scripts/deploy-platform-profile.sh
 
 .PHONY: down
 down: ## Stop and delete the development environment
@@ -95,12 +104,24 @@ certs: ## Generate local TLS certificates with mkcert
 	@./scripts/setup-certs.sh
 
 .PHONY: trust-ca
-trust-ca: ## Install mkcert CA in Windows certificate store (WSL2)
-	@./scripts/trust-ca-windows.sh
+trust-ca: ## Install mkcert CA in Windows certificate store (WSL2 only)
+	@if [ "$$(uname -s)" = "Darwin" ]; then \
+		echo -e "$(YELLOW)⚠️  Not needed on macOS — mkcert -install already configures the system trust store$(NC)"; \
+	else \
+		./scripts/trust-ca-windows.sh; \
+	fi
 
 .PHONY: deploy-keycloak
 deploy-keycloak: ## Deploy Keycloak operator and instance
 	@./scripts/deploy-keycloak.sh
+
+.PHONY: forwarding
+forwarding: ## Set up Tailscale forwarding and Windows Firewall (WSL2 only)
+	@if [ "$$(uname -s)" = "Darwin" ]; then \
+		echo -e "$(YELLOW)⚠️  Not needed on macOS — ports are directly accessible via Docker Desktop$(NC)"; \
+	else \
+		./scripts/setup-tailscale.sh; \
+	fi
 
 .PHONY: clean
 clean: ## Clean up all resources
